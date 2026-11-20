@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>چاپ لیست کلاسی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: light;
+    --bg: #f4f6f9;
+    --canvas: #eef2f6;
+    --panel: #ffffff;
+    --surface: #f8fafc;
+    --text: #0f172a;
+    --text-2: #334155;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-soft: rgba(37, 99, 235, 0.08);
+    --danger: #dc2626;
+    --danger-soft: rgba(220, 38, 38, 0.08);
+    --radius-sm: 8px;
+    --radius: 11px;
+    --radius-lg: 14px;
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.1), 0 2px 6px rgba(15, 23, 42, 0.05);
+    --shadow-paper: 0 14px 40px rgba(15, 23, 42, 0.11), 0 3px 10px rgba(15, 23, 42, 0.05), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; padding: 0; height: 100%; }
+  body{
+    font-family: "Vazirmatn", Tahoma, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Custom minimal scrollbars */
+  .controls::-webkit-scrollbar,
+  .cbody::-webkit-scrollbar,
+  .preview-wrap::-webkit-scrollbar,
+  textarea::-webkit-scrollbar{
+    width: 6px;
+    height: 6px;
+  }
+  .controls::-webkit-scrollbar-track,
+  .cbody::-webkit-scrollbar-track,
+  .preview-wrap::-webkit-scrollbar-track,
+  textarea::-webkit-scrollbar-track{
+    background: transparent;
+  }
+  .controls::-webkit-scrollbar-thumb,
+  .cbody::-webkit-scrollbar-thumb,
+  .preview-wrap::-webkit-scrollbar-thumb,
+  textarea::-webkit-scrollbar-thumb{
+    background: rgba(100, 116, 139, 0.24);
+    border-radius: 99px;
+  }
+  .controls::-webkit-scrollbar-thumb:hover,
+  .cbody::-webkit-scrollbar-thumb:hover,
+  .preview-wrap::-webkit-scrollbar-thumb:hover,
+  textarea::-webkit-scrollbar-thumb:hover{
+    background: rgba(100, 116, 139, 0.42);
+  }
+
+  /* App Layout */
+  .app{
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    align-items: stretch;
+  }
+
+  /* Sidebar */
+  .controls{
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    width: 400px;
+    flex: 0 0 400px;
+    height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    box-shadow: -4px 0 24px rgba(15, 23, 42, 0.03);
+    position: relative;
+    z-index: 4;
+  }
+
+  .head{
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .headrow{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .ttl{ min-width: 0; }
+  .ttl h1{
+    font-size: 15.5px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+    color: var(--text);
+  }
+  .credit{
+    display: inline-block;
+    margin: 2px 0 0;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+    opacity: 0.9;
+  }
+
+  .hbtns{
+    display: flex;
+    gap: 7px;
+    flex-shrink: 0;
+  }
+  .ic{
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+  }
+  .ib{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .hbtns button{
+    padding: 7px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 9px;
+  }
+
+  /* Mobile view switcher (hidden on desktop) */
+  .mob-tabs{
+    display: none;
+  }
+
+  .cbody{
+    padding: 16px 16px 48px;
+  }
+
+  /* Accordion Cards */
+  details.box{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    margin-bottom: 10px;
+    background: var(--panel);
+    box-shadow: var(--shadow-xs);
+    transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+    overflow: hidden;
+  }
+  details.box:hover{
+    border-color: var(--line-strong);
+  }
+  details.box[open]{
+    border-color: rgba(37, 99, 235, 0.26);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.045);
+  }
+  details.box > summary{
+    list-style: none;
+    cursor: pointer;
+    padding: 12.5px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    user-select: none;
+    transition: background-color 0.16s var(--ease);
+  }
+  details.box > summary:hover{
+    background: var(--surface);
+  }
+  details.box > summary::-webkit-details-marker{ display: none; }
+  details.box > summary::after{
+    content: "";
+    margin-inline-start: auto;
+    width: 7px;
+    height: 7px;
+    border-inline-end: 1.8px solid var(--muted);
+    border-bottom: 1.8px solid var(--muted);
+    transform: rotate(45deg);
+    transition: transform 0.2s var(--ease), border-color 0.2s var(--ease);
+    flex-shrink: 0;
+  }
+  details.box[open] > summary::after{
+    transform: rotate(-135deg);
+    border-color: var(--accent);
+  }
+  details.box > .bd{
+    padding: 6px 14px 15px;
+    border-top: 1px solid #f1f5f9;
+    animation: fadeSlide 0.2s var(--ease);
+  }
+  @keyframes fadeSlide{
+    from{ opacity: 0; transform: translateY(-3px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+
+  .num{
+    display: inline-flex;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  details.box[open] .num{
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* Typography & Form Controls */
+  .hint{
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 6px 0 8px;
+  }
+  label{
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin: 11px 0 5px;
+  }
+  textarea,
+  input[type=number],
+  input[type=text],
+  select{
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+    font-size: 13.5px;
+    padding: 8.5px 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.16s var(--ease), background-color 0.16s var(--ease), box-shadow 0.16s var(--ease);
+    font-variant-numeric: tabular-nums;
+  }
+  textarea:hover,
+  input[type=number]:hover,
+  input[type=text]:hover,
+  select:hover{
+    border-color: var(--line-strong);
+  }
+  textarea:focus,
+  input[type=number]:focus,
+  input[type=text]:focus,
+  select:focus{
+    outline: none;
+    background: #ffffff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3.5px rgba(37, 99, 235, 0.12);
+  }
+  textarea{
+    height: 220px;
+    resize: vertical;
+    line-height: 1.75;
+  }
+  textarea::placeholder,
+  input::placeholder{
+    color: #94a3b8;
+  }
+
+  .row{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+  .row3{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  /* Font search box */
+  .fontsearch{
+    position: relative;
+    margin-bottom: 6px;
+  }
+  .fontsearch input[type=text]{
+    padding-inline-start: 36px;
+    background: #ffffff;
+  }
+  .fontsearch .fclr{
+    position: absolute;
+    inset-inline-start: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    box-shadow: none;
+    font-size: 17px;
+    line-height: 1;
+    font-weight: 400;
+  }
+  .fontsearch .fclr:hover{
+    background: rgba(100, 116, 139, 0.12);
+    border-color: transparent;
+    color: var(--text);
+  }
+  .fontsearch .fclr:active{
+    transform: translateY(-50%) scale(0.94);
+  }
+  .fontsearch.hasq .fclr{
+    display: inline-flex;
+  }
+
+  .count{
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 7px;
+    line-height: 1.75;
+  }
+  .count.warn{
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  /* Buttons */
+  .btns{
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  button{
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 13px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: #ffffff;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.12s var(--ease);
+  }
+  button:hover{
+    background: var(--surface);
+    border-color: var(--line-strong);
+  }
+  button:active{
+    transform: scale(0.975);
+  }
+  button:focus-visible{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.22);
+  }
+  button:disabled{
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  button.primary{
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.22), 0 4px 12px rgba(37, 99, 235, 0.18);
+  }
+  button.primary:hover{
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25), 0 6px 16px rgba(37, 99, 235, 0.22);
+  }
+  button.danger{
+    color: var(--danger);
+  }
+  button.danger:hover{
+    background: var(--danger-soft);
+    border-color: rgba(220, 38, 38, 0.28);
+  }
+
+  .check{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 0;
+    font-size: 12.5px;
+    color: var(--text-2);
+    cursor: pointer;
+    user-select: none;
+  }
+  .check input{
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .locked{
+    opacity: 0.48;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease);
+  }
+
+  .tip{
+    margin-top: 14px;
+    padding: 11px 13px;
+    border-radius: var(--radius);
+    border: 1px solid #e2e8f0;
+    border-inline-start: 3px solid var(--accent);
+    background: var(--surface);
+    font-size: 12px;
+    line-height: 1.9;
+    color: var(--text-2);
+  }
+
+  /* Class Chips */
+  .chips{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0 4px;
+  }
+  .chip{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5.5px 11px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 500;
+    box-shadow: none;
+  }
+  .chip:hover{
+    background: #ffffff;
+    border-color: var(--line-strong);
+    color: var(--text);
+  }
+  .chip.on{
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.24);
+  }
+  .chip.on:hover{
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: #ffffff;
+  }
+  .chip .st{
+    font-size: 11px;
+    opacity: 0.78;
+  }
+
+  .addbox{
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .addbox .check{ margin: 6px 0; }
+  [hidden]{ display: none !important; }
+
+  /* Preview Studio Canvas */
+  .pcol{
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100vh;
+    height: 100dvh;
+    background-color: var(--canvas);
+    background-image: radial-gradient(rgba(100, 116, 139, 0.22) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .linfo{
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    z-index: 6;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 99px;
+    padding: 5px 13px;
+    margin: 0;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    box-shadow: var(--shadow-sm);
+  }
+  .linfo.warn{
+    background: rgba(254, 242, 242, 0.94);
+    border-color: #fecaca;
+    color: #b91c1c;
+  }
+  .linfo:empty{ display: none; }
+
+  .preview-wrap{
+    height: 100%;
+    overflow: auto;
+    padding: 52px 28px 36px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .pagewrap{
+    margin-bottom: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .plabel{
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    border-radius: 99px;
+    padding: 3px 12px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .scaler{ position: relative; }
+
+  .empty{
+    margin-top: 6vh;
+    padding: 36px 28px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13.5px;
+    line-height: 2;
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.76);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 18px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Table Hover Overlay & Floating Toolbar */
+  .hov{
+    position: absolute;
+    z-index: 3;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: outline-color 0.14s var(--ease), box-shadow 0.14s var(--ease);
+  }
+  .hov:hover{
+    outline: 2px dashed rgba(37, 99, 235, 0.55);
+    outline-offset: 2px;
+  }
+  .hov.on{
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+  }
+  .tbw{
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-bottom: 8px;
+    display: none;
+    z-index: 8;
+  }
+  .hov:hover .tbw{ display: block; }
+  .hov.in .tbw{
+    bottom: auto;
+    top: 4px;
+    padding: 0;
+  }
+  .tb{
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 4px;
+    box-shadow: var(--shadow-md);
+  }
+  .tb button{
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 7px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+  .tb button:hover{
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-color: transparent;
+  }
+  .tb button.danger:hover{
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  /* A4 Sheet & Exact Print Table Geometry (Preserved) */
+  .sheet{
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    width: 210mm;
+    height: 296.5mm;
+    background: #fff;
+    color: #000;
+    overflow: hidden;
+    box-shadow: var(--shadow-paper);
+    border-radius: 2px;
+  }
+  .grid{
+    position: absolute;
+    display: grid;
+    border: var(--bw, .25mm) solid #000;
+  }
+  .cell{
+    display: flex;
+    align-items: center;
+    padding: 0 1mm;
+    overflow: hidden;
+    min-height: 0;
+    border-bottom: var(--bw, .25mm) solid #000;
+    line-height: 1;
+  }
+  .cell:last-child{ border-bottom: none; }
+  .cell span{ white-space: nowrap; display: inline-block; }
+  .grid.noborder, .grid.noborder .cell{ border: none; }
+
+  /* Tablet */
+  @media (max-width: 1100px) and (min-width: 861px){
+    .controls{
+      width: 345px;
+      flex: 0 0 345px;
+    }
+    .preview-wrap{
+      padding: 48px 18px 28px;
+    }
+  }
+
+  /* Touch devices: show toolbar on selected table */
+  @media (hover: none){
+    .hov.on .tbw{ display: block; }
+  }
+
+  /* Mobile & Small Tablet Responsive Mode */
+  @media (max-width: 860px){
+    .app{
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .controls{
+      width: 100%;
+      flex: 0 0 auto;
+      height: auto;
+      border-left: none;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .head{
+      position: static;
+      padding: 10px 14px 10px;
+      background: #ffffff;
+      backdrop-filter: none;
+    }
+
+    /* Segmented View Switcher */
+    .mob-tabs{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-top: 10px;
+      padding: 3px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    .mob-tab{
+      border: none;
+      background: transparent;
+      box-shadow: none;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .mob-tab:hover{
+      background: transparent;
+      color: var(--text);
+    }
+    .mob-tab.on{
+      background: #ffffff;
+      color: var(--accent);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Controls View Active */
+    .app[data-view="controls"] .controls{
+      flex: 1 1 auto;
+      min-height: 0;
+      border-bottom: none;
+    }
+    .app[data-view="controls"] .cbody{
+      flex: 1 1 auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 14px 14px calc(36px + env(safe-area-inset-bottom, 0px));
+    }
+    /* Keep preview laid out off-screen so fitText & PDF export always measure accurately */
+    .app[data-view="controls"] .pcol{
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Preview View Active */
+    .app[data-view="preview"] .controls{
+      flex: 0 0 auto;
+    }
+    .app[data-view="preview"] .cbody{
+      display: none;
+    }
+    .app[data-view="preview"] .pcol{
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
+      visibility: visible;
+      pointer-events: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .preview-wrap{
+      height: 100%;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 48px 12px calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+    .linfo{
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: calc(100% - 24px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+    .hov.on .tbw{ display: block; }
+    .tb button{
+      width: 34px;
+      height: 34px;
+    }
+
+    /* Prevent iOS Safari zoom on input focus */
+    textarea,
+    input[type=number],
+    input[type=text],
+    select{
+      font-size: 16px;
+      padding: 9px 11px;
+    }
+    textarea{ height: 190px; }
+    .fontsearch input[type=text]{ padding-inline-start: 38px; }
+  }
+
+  /* Compact Phones */
+  @media (max-width: 400px){
+    .head{ padding: 9px 11px; }
+    .ttl h1{ font-size: 14.5px; }
+    .hbtns{ gap: 5px; }
+    .hbtns button{
+      padding: 6.5px 9px;
+      font-size: 12px;
+    }
+    .row{ gap: 8px; }
+    .row3{ gap: 6px; }
+    .row3 label{ font-size: 11.5px; }
+  }
+
+  /* Exact Print Rules */
+  @page{ size: A4 portrait; margin: 0; }
+  @media print{
+    html, body{
+      background: #fff !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .controls, .mob-tabs, .plabel, .empty, .hov, .linfo{
+      display: none !important;
+    }
+    .app{
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .pcol{
+      display: block !important;
+      position: static !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      z-index: auto !important;
+      width: auto !important;
+      height: auto !important;
+      background: none !important;
+    }
+    .preview-wrap{
+      display: block !important;
+      height: auto !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      min-width: 0 !important;
+    }
+    .pagewrap{
+      margin: 0 !important;
+      display: block !important;
+      break-after: page;
+    }
+    .pagewrap:last-child{ break-after: auto; }
+    .scaler{
+      width: 210mm !important;
+      height: 296.5mm !important;
+    }
+    .sheet{
+      transform: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-print" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></symbol>
+  <symbol id="i-pdf" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12v6"/><path d="m9 15 3 3 3-3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6M14 11v6"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></symbol>
+</svg>
+<div class="app" data-view="controls">
+  <section class="controls">
+    <div class="head">
+      <div class="headrow">
+        <div class="ttl"><h1>چاپ لیست کلاسی</h1><span class="credit">مهندس مدبری</span></div>
+        <div class="hbtns">
+          <button id="pdf" type="button" class="ib" title="خروجی PDF"><svg class="ic"><use href="#i-pdf"/></svg><span id="pdfLbl">PDF</span></button>
+          <button id="print" type="button" class="ib primary" title="چاپ"><svg class="ic"><use href="#i-print"/></svg><span>چاپ</span></button>
+        </div>
+      </div>
+      <div class="mob-tabs" role="tablist">
+        <button type="button" class="mob-tab ib on" data-view="controls" role="tab" aria-selected="true"><svg class="ic"><use href="#i-sliders"/></svg><span>تنظیمات</span></button>
+        <button type="button" class="mob-tab ib" data-view="preview" role="tab" aria-selected="false"><svg class="ic"><use href="#i-eye"/></svg><span>پیش‌نمایش</span></button>
+      </div>
+    </div>
+    <div class="cbody">
+
+      <details class="box" id="bx-classes">
+        <summary>کلاس‌ها</summary>
+        <div class="bd">
+          <div class="chips" id="chips"></div>
+          <label for="title">نام کلاس فعال</label>
+          <input type="text" id="title">
+          <div class="btns">
+            <button id="addBtn" type="button" class="ib"><svg class="ic"><use href="#i-plus"/></svg><span>افزودن کلاس</span></button>
+            <button id="copyBtn" type="button" class="ib"><svg class="ic"><use href="#i-copy"/></svg><span>کپی کلاس</span></button>
+            <button id="delBtn" type="button" class="ib danger"><svg class="ic"><use href="#i-trash"/></svg><span>حذف</span></button>
+          </div>
+          <div class="addbox" id="addBox" hidden>
+            <label class="check"><input type="radio" name="addMode" value="new" checked> لیست جدید (جدول خالی)</label>
+            <label class="check"><input type="radio" name="addMode" value="copy"> کپی از لیست موجود</label>
+            <div id="copyRow" hidden>
+              <label for="copySrc">کپی از کدام کلاس؟</label>
+              <select id="copySrc"></select>
+            </div>
+            <label for="newTitle">نام کلاس جدید</label>
+            <input type="text" id="newTitle">
+            <div class="btns"><button id="addOk" type="button" class="primary ib"><svg class="ic"><use href="#i-check"/></svg><span>افزودن</span></button><button id="addCancel" type="button" class="ib"><svg class="ic"><use href="#i-x"/></svg><span>انصراف</span></button></div>
+          </div>
+          <div class="count">روی هر جدول در پیش‌نمایش کلیک کنید تا تنظیمات همان جدول باز شود. با نگه داشتن موس روی جدول، دکمه‌های افزودن و حذف ظاهر می‌شوند.</div>
+        </div>
+      </details>
+
+      <details class="box" id="bx-build">
+        <summary><span class="num">۱</span> ساخت جدول</summary>
+        <div class="bd">
+          <p class="hint">ابعاد جدول را از بالا تا پایین وارد کنید.</p>
+          <div class="row3">
+            <div><label for="dimH">طول (cm)</label><input type="number" id="dimH" value="21.7" step="0.1" min="1" max="29"></div>
+            <div><label for="dimW">عرض (cm)</label><input type="number" id="dimW" value="3" step="0.1" min="1" max="20"></div>
+            <div><label for="dimR">تعداد سطر</label><input type="number" id="dimR" value="45" step="1" min="1" max="150"></div>
+          </div>
+          <div class="count" id="rowInfo"></div>
+          <div class="btns"><button id="buildBtn" type="button" class="primary ib"><svg class="ic"><use href="#i-grid"/></svg><span id="buildLbl">ساخت جدول</span></button></div>
+          <div class="count" id="buildMsg"></div>
+        </div>
+      </details>
+
+      <details class="box" id="bx-names">
+        <summary><span class="num">۲</span> وارد کردن اسامی</summary>
+        <div class="bd locked" id="namesBody">
+          <p class="hint">هر نام را در یک خط بنویسید (می‌توانید یک ستون از اکسل را کپی و اینجا بچسبانید).</p>
+          <textarea id="names" placeholder="علی احمدی&#10;زهرا محمدی&#10;..." disabled></textarea>
+          <div class="count" id="count"></div>
+        </div>
+      </details>
+
+      <details class="box" id="bx-layout">
+        <summary><span class="num">۳</span> چیدمان روی کاغذ</summary>
+        <div class="bd">
+          <div class="row">
+            <div><label for="top">فاصله از بالای کاغذ (mm)</label><input type="number" id="top" value="10" step="0.5" min="0" max="80"></div>
+            <div><label for="edge">فاصله از لبه کاغذ (mm)</label><input type="number" id="edge" value="10" step="0.5" min="0" max="100"></div>
+          </div>
+          <div class="row">
+            <div><label for="gap">فاصله بین جدول‌ها (mm)</label><input type="number" id="gap" value="2" step="0.5" min="0" max="30"></div>
+            <div><label for="side">شروع چیدمان از</label>
+              <select id="side"><option value="left" selected>چپ کاغذ</option><option value="right">راست کاغذ</option></select></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="box" id="bx-text">
+        <summary><span class="num">۴</span> متن و فونت</summary>
+        <div class="bd">
+          <div class="row">
+            <div><label for="fs">حداکثر فونت (pt)</label><input type="number" id="fs" value="9" step="0.5" min="5" max="14"></div>
+            <div><label for="align">چینش نام</label>
+              <select id="align">
+                <option value="right" selected>راست</option>
+                <option value="center">وسط</option>
+                <option value="left">چپ</option>
+                <option value="justify">جاستیفای (کشیده)</option>
+              </select></div>
+          </div>
+          <label for="weight">وزن فونت</label>
+          <select id="weight">
+            <option value="300">نازک (300)</option><option value="400" selected>معمولی (400)</option>
+            <option value="500">متوسط (500)</option><option value="600">نیمه‌ضخیم (600)</option>
+            <option value="700">بولد (700)</option><option value="800">خیلی ضخیم (800)</option>
+            <option value="900">سیاه (900)</option>
+          </select>
+          <label for="font">فونت</label>
+          <div class="fontsearch" id="fontSearchWrap">
+            <input type="text" id="fontSearch" placeholder="جست‌وجوی فونت…" autocomplete="off" spellcheck="false" aria-label="جست‌وجوی فونت">
+            <button type="button" class="fclr" id="fontClear" title="پاک کردن جست‌وجو" aria-label="پاک کردن جست‌وجو">×</button>
+          </div>
+          <select id="font">
+            <option value='Vazirmatn,Tahoma,"Segoe UI",sans-serif' selected>پیش‌فرض (Vazirmatn / Tahoma)</option>
+            <option value='"B Nazanin","Nazanin","Times New Roman",serif'>نازنین / سریف</option>
+            <option value='Arial,Tahoma,sans-serif'>Arial</option>
+          </select>
+          <div class="count" id="fontMatch"></div>
+          <div class="btns"><button id="sysFonts" type="button" class="ib"><svg class="ic"><use href="#i-type"/></svg><span>انتخاب از فونت‌های سیستم</span></button></div>
+          <div class="count" id="fontInfo"></div>
+          <label class="check"><input type="checkbox" id="sort"> مرتب‌سازی الفبایی (همه کلاس‌ها)</label>
+        </div>
+      </details>
+
+      <details class="box" id="bx-lines">
+        <summary><span class="num">۵</span> خطوط جدول و راهنمای چاپ</summary>
+        <div class="bd">
+          <div class="row">
+            <div><label for="bw">ضخامت خط (mm)</label><input type="number" id="bw" value="0.25" step="0.05" min="0.1" max="1"></div>
+          </div>
+          <label class="check"><input type="checkbox" id="lines" checked> چاپ خطوط جدول</label>
+          <div class="tip">
+            در پنجره چاپ، Scale را روی <b>100%</b> (Actual size) بگذارید و Fit to page را خاموش کنید، وگرنه ابعاد دقیق نمی‌شود. بهتر است اول یک نمونه روی کاغذ معمولی چاپ بگیرید و با خط‌کش بسنجید.
+          </div>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <div class="pcol">
+    <div class="count linfo" id="layoutInfo"></div>
+    <section class="preview-wrap" id="preview">
+      <div id="pages"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var PW = 210, PH = 296.5, BOT = 5, MM = 96/25.4, KEY = 'class-roster-table-v2';
+  var S = { classes: [], active: 0, nextId: 1 };
+  var SET = ['top','edge','gap','side','fs','align','bw','font','weight'];
+  var E = {};
+  SET.concat(['sort','lines']).forEach(function(k){ E[k] = $(k); });
+
+  var appEl = document.querySelector('.app');
+  var mobTabs = document.querySelectorAll('.mob-tab');
+  function isMobile(){ return window.innerWidth <= 860; }
+  function setMobileView(v){
+    if(!appEl) return;
+    appEl.dataset.view = v;
+    Array.prototype.forEach.call(mobTabs, function(b){
+      var on = (b.dataset.view === v);
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if(v === 'preview'){
+      requestAnimationFrame(function(){ fitText(); scalePreview(); });
+    }
+  }
+  Array.prototype.forEach.call(mobTabs, function(b){
+    b.addEventListener('click', function(){ setMobileView(b.dataset.view); });
+  });
+
+  function toFa(n){ return String(n).replace(/\d/g,function(d){return '۰۱۲۳۴۵۶۷۸۹'[d];}); }
+  function num(el,def){ var v = parseFloat(el.value); return isNaN(v) ? def : v; }
+
+  function mkClass(title, src){
+    var c = { id:S.nextId++, title:title, w:3, h:21.7, rows:45, names:'', built:false };
+    if(src){ c.w=src.w; c.h=src.h; c.rows=src.rows; }
+    return c;
+  }
+  function cur(){
+    for(var i=0;i<S.classes.length;i++) if(S.classes[i].id===S.active) return S.classes[i];
+    return S.classes[0];
+  }
+
+  /* ---------- fonts: master list, normalize & search ---------- */
+  var ALL_FONTS = [];
+  function normFont(s){
+    return String(s || '').toLowerCase()
+      .replace(/\u064A/g, '\u06CC')
+      .replace(/\u0643/g, '\u06A9')
+      .replace(/[\u200C\u200E\u200F]/g, ' ')
+      .replace(/["'()]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  function fontLabel(v){
+    return String(v).split(',')[0].replace(/"/g, '').trim();
+  }
+  function collectFonts(){
+    ALL_FONTS = [];
+    Array.prototype.forEach.call(E.font.options, function(o){
+      ALL_FONTS.push({ value:o.value, label:o.textContent });
+    });
+  }
+  function ensureFontOption(v){
+    if(!v) return;
+    for(var i=0;i<ALL_FONTS.length;i++) if(ALL_FONTS[i].value === v) return;
+    ALL_FONTS.push({ value:v, label: fontLabel(v) });
+  }
+  function renderFontOptions(q, val){
+    if(val === undefined) val = E.font.value;
+    var nq = normFont(q);
+    var list = ALL_FONTS.slice();
+    if(nq){
+      list = list.filter(function(f){
+        return normFont(f.label).indexOf(nq) > -1 || normFont(f.value).indexOf(nq) > -1;
+      });
+    }
+    // keep the currently selected font visible even if it doesn't match the query
+    if(val && !list.some(function(f){ return f.value === val; })){
+      var found = null;
+      for(var i=0;i<ALL_FONTS.length;i++){ if(ALL_FONTS[i].value === val){ found = ALL_FONTS[i]; break; } }
+      list.unshift(found || { value:val, label:fontLabel(val) });
+    }
+    E.font.innerHTML = '';
+    list.forEach(function(f){
+      var op = document.createElement('option');
+      op.value = f.value;
+      op.textContent = f.label;
+      E.font.appendChild(op);
+    });
+    if(val) E.font.value = val;
+    var fm = $('fontMatch');
+    if(fm){
+      fm.textContent = nq
+        ? (list.length ? toFa(list.length) + ' فونت مطابق پیدا شد' : 'فونتـی با این نام پیدا نشد')
+        : '';
+    }
+    return list.length;
+  }
+
+  /* ---------- persistence ---------- */
+  function save(){
+    try{
+      var o = { classes:S.classes, active:S.active, nextId:S.nextId, set:{} };
+      SET.forEach(function(k){ o.set[k]=E[k].value; });
+      o.set.sort = E.sort.checked; o.set.lines = E.lines.checked;
+      localStorage.setItem(KEY, JSON.stringify(o));
+    }catch(e){}
+  }
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(!raw) return false;
+      var o = JSON.parse(raw);
+      if(!o.classes || !o.classes.length) return false;
+      S.classes = o.classes; S.active = o.active; S.nextId = o.nextId || (o.classes.length+1);
+      if(o.set){
+        if(o.set.font){ ensureFontOption(o.set.font); renderFontOptions('', o.set.font); }
+        SET.forEach(function(k){ if(o.set[k]!==undefined) E[k].value = o.set[k]; });
+        if(o.set.sort!==undefined) E.sort.checked = o.set.sort;
+        if(o.set.lines!==undefined) E.lines.checked = o.set.lines;
+      }
+      return true;
+    }catch(e){ return false; }
+  }
+
+  /* ---------- class list UI ---------- */
+  function renderChips(){
+    var box = $('chips'); box.innerHTML = '';
+    S.classes.forEach(function(c){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (c.id===S.active ? ' on' : '');
+      b.innerHTML = '<span></span><span class="st"></span>';
+      b.firstChild.textContent = c.title || 'بدون نام';
+      b.lastChild.textContent = c.built ? ('(' + toFa(c.rows) + ' سطر)') : '(بدون جدول)';
+      b.addEventListener('click',function(){ selectClass(c.id,false); });
+      box.appendChild(b);
+    });
+    var sel = $('copySrc'); sel.innerHTML = '';
+    S.classes.forEach(function(c){
+      var o = document.createElement('option'); o.value = c.id; o.textContent = c.title || 'بدون نام'; sel.appendChild(o);
+    });
+  }
+
+  function syncForm(){
+    var c = cur();
+    $('title').value = c.title;
+    $('dimH').value = c.h; $('dimW').value = c.w; $('dimR').value = c.rows;
+    $('names').value = c.names;
+    $('buildLbl').textContent = c.built ? 'به‌روزرسانی جدول' : 'ساخت جدول';
+    $('namesBody').classList.toggle('locked', !c.built);
+    $('names').disabled = !c.built;
+    $('buildMsg').textContent = c.built ? 'جدول ساخته شد؛ اسامی را وارد کنید.' : '';
+    updateRowInfo();
+    updateCount();
+  }
+
+  function updateRowInfo(){
+    var h = parseFloat($('dimH').value), r = parseInt($('dimR').value,10);
+    $('rowInfo').textContent = (h>0 && r>0) ? 'ارتفاع هر سطر ≈ ' + toFa((h*10/r).toFixed(2)) + ' میلی‌متر' : '';
+  }
+
+  /* ---------- names ---------- */
+  function getNames(c){
+    var list = c.names.split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
+    if(E.sort.checked) list.sort(function(a,b){return a.localeCompare(b,'fa');});
+    return list;
+  }
+  function updateCount(){
+    var c = cur(), n = getNames(c).length;
+    var el = $('count');
+    el.textContent = toFa(Math.min(n,c.rows)) + ' از ' + toFa(c.rows) + ' نام' + (n>c.rows ? ' — ' + toFa(n-c.rows) + ' نام اضافه چاپ نمی‌شود' : '');
+    el.className = 'count' + (n>c.rows ? ' warn' : '');
+  }
+
+  function markActive(){
+    Array.prototype.forEach.call(document.querySelectorAll('#pages .hov'),function(h){
+      h.classList.toggle('on', parseInt(h.dataset.id,10) === S.active);
+    });
+  }
+  function selectClass(id, openBoxes){
+    S.active = id; syncForm(); renderChips(); markActive(); save();
+    if(openBoxes){
+      if(isMobile()) setMobileView('controls');
+      $('bx-build').open = true; $('bx-names').open = true;
+      requestAnimationFrame(function(){
+        $('bx-build').scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    }
+  }
+  function IC(n){ return '<svg class="ic"><use href="#i-'+n+'"/></svg>'; }
+  function copyClass(id){
+    var idx = -1;
+    S.classes.forEach(function(k,i){ if(k.id===id) idx = i; });
+    if(idx < 0) return;
+    var src = S.classes[idx];
+    var c = mkClass((src.title || 'کلاس') + ' (کپی)', src);
+    c.names = src.names; c.built = src.built;
+    S.classes.splice(idx+1, 0, c);
+    S.active = c.id;
+    syncForm(); renderChips(); renderAll();
+  }
+  function addAfter(id){
+    var idx = -1;
+    S.classes.forEach(function(k,i){ if(k.id===id) idx = i; });
+    if(idx < 0) return;
+    var c = mkClass('کلاس ' + toFa(S.classes.length+1), S.classes[idx]);
+    c.built = true;
+    S.classes.splice(idx+1, 0, c);
+    S.active = c.id;
+    syncForm(); renderChips(); renderAll();
+    if(isMobile()) setMobileView('controls');
+    $('bx-names').open = true;
+    requestAnimationFrame(function(){
+      $('bx-names').scrollIntoView({behavior:'smooth', block:'start'});
+    });
+  }
+  function delClass(id){
+    var c = null;
+    S.classes.forEach(function(k){ if(k.id===id) c = k; });
+    if(!c) return;
+    if(!window.confirm('کلاس «' + (c.title||'') + '» حذف شود؟')) return;
+    if(S.classes.length === 1){
+      c.names = ''; c.built = false; c.title = 'کلاس ۱';
+    }else{
+      S.classes = S.classes.filter(function(k){ return k.id !== id; });
+      if(S.active === id) S.active = S.classes[0].id;
+    }
+    syncForm(); renderChips(); renderAll();
+  }
+
+  /* ---------- layout: چیدن جدول‌ها کنار هم ---------- */
+  function layout(){
+    var T = num(E.top,10), M = num(E.edge,10), G = num(E.gap,2);
+    var pages = [], page = null, x = M, y = T, shelfH = 0, over = false;
+    function newPage(){ page = []; pages.push(page); x = M; y = T; shelfH = 0; }
+    S.classes.forEach(function(c){
+      if(!c.built) return;
+      var w = c.w*10, h = c.h*10;
+      if(!page) newPage();
+      if(x>M && x+w > PW-M){ y += shelfH + G; x = M; shelfH = 0; }
+      if(y>T && y+h > PH-BOT){ newPage(); }
+      if(x+w > PW || y+h > PH) over = true;
+      page.push({ c:c, x:x, y:y, w:w, h:h });
+      x += w + G; shelfH = Math.max(shelfH,h);
+    });
+    return { pages:pages, over:over };
+  }
+
+  /* ---------- rendering ---------- */
+  function makeGrid(it){
+    var c = it.c, names = getNames(c);
+    var g = document.createElement('div');
+    g.className = 'grid' + (E.lines.checked ? '' : ' noborder');
+    g.dir = 'rtl';
+    g.style.setProperty('--bw', (num(E.bw,0.25))+'mm');
+    var left = (E.side.value==='right') ? (PW - it.x - it.w) : it.x;
+    g.style.left = left+'mm'; g.style.top = it.y+'mm';
+    g.style.width = it.w+'mm'; g.style.height = it.h+'mm';
+    g.style.gridTemplateRows = 'repeat('+c.rows+',1fr)';
+    g.style.fontFamily = E.font.value;
+    g.style.fontWeight = E.weight.value;
+    var rowMM = it.h / c.rows;
+    var cap = rowMM * 2.8346 * 0.72;
+    var base = Math.min(num(E.fs,9), cap);
+    var al = E.align.value;
+    for(var i=0;i<c.rows;i++){
+      var cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.sz = base;
+      cell.style.justifyContent = (al==='right'||al==='justify') ? 'flex-start' : (al==='left' ? 'flex-end' : 'center');
+      var s = document.createElement('span');
+      s.dataset.n = names[i] || '';
+      s.textContent = names[i] || '';
+      cell.appendChild(s);
+      g.appendChild(cell);
+    }
+    return g;
+  }
+
+  /* کشیده‌نویسی (کشیده بین حروف چسبان) */
+  var NONJOIN = 'آاأإؤءةدذرزژو';
+  function isLetter(ch){ return /[\u0621-\u064A\u066E-\u06D3]/.test(ch); }
+  function joinsNext(ch){ return isLetter(ch) && NONJOIN.indexOf(ch) < 0; }
+
+  function justifyKashida(s, name, avail){
+    var w = s.offsetWidth;
+    if(w >= avail - 0.5) return;
+    s.textContent = name + '\u0640';
+    var tw = s.offsetWidth - w;
+    s.textContent = name;
+    if(tw <= 0.3) return;
+    var chars = Array.from(name), cand = [];
+    for(var i=0;i<chars.length-1;i++){
+      if(joinsNext(chars[i]) && isLetter(chars[i+1]) && !(chars[i]==='ل' && chars[i+1]==='ا')) cand.push(i);
+    }
+    if(!cand.length) return;
+    function build(k){
+      var base = Math.floor(k/cand.length), rem = k % cand.length, extra = {};
+      cand.forEach(function(p){ extra[p] = base; });
+      for(var j=0;j<rem;j++){ extra[cand[Math.floor((j+0.5)*cand.length/rem)]]++; }
+      var out = '';
+      for(var q=0;q<chars.length;q++){ out += chars[q]; if(extra[q]) out += new Array(extra[q]+1).join('\u0640'); }
+      s.textContent = out;
+    }
+    var need = Math.min(Math.floor((avail - w)/tw), cand.length*6);
+    if(need < 1) return;
+    build(need);
+    while(s.offsetWidth > avail - 0.3 && need > 0){ need--; build(need); }
+  }
+
+  function fitText(){
+    var al = E.align.value;
+    var cells = document.querySelectorAll('#pages .cell');
+    Array.prototype.forEach.call(cells,function(c){
+      var s = c.firstChild, name = s.dataset.n;
+      s.style.display = 'inline-block'; s.style.width = ''; s.style.textAlign = ''; s.style.textAlignLast = '';
+      s.textContent = name;
+      if(!name) return;
+      var size = parseFloat(c.dataset.sz) || 9;
+      s.style.fontSize = size+'pt';
+      var cs = getComputedStyle(c);
+      var avail = c.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      if(avail <= 0) return;
+      while(s.offsetWidth > avail && size > 3.5){ size -= 0.25; s.style.fontSize = size+'pt'; }
+      if(al === 'justify'){
+        justifyKashida(s, name, avail);
+        s.style.display = 'block'; s.style.width = '100%';
+        s.style.textAlign = 'justify'; s.style.textAlignLast = 'justify';
+      }
+    });
+  }
+
+  function scalePreview(){
+    var host = $('preview');
+    var full = PW*MM;
+    var pad = isMobile() ? 24 : 56;
+    var w = host.clientWidth || window.innerWidth;
+    var sc = Math.min(1, (w - pad)/full);
+    if(sc < 0.25) sc = 0.25;
+    Array.prototype.forEach.call(document.querySelectorAll('#pages .scaler'),function(sc_){
+      sc_.style.width = (full*sc)+'px';
+      sc_.style.height = (PH*MM*sc)+'px';
+      sc_.firstChild.style.transform = 'scale('+sc+')';
+      Array.prototype.forEach.call(sc_.querySelectorAll('.hov'),function(h){
+        var k = MM*sc;
+        h.style.left = (parseFloat(h.dataset.l)*k)+'px';
+        h.style.top = (parseFloat(h.dataset.t)*k)+'px';
+        h.style.width = (parseFloat(h.dataset.w)*k)+'px';
+        h.style.height = (parseFloat(h.dataset.h)*k)+'px';
+        h.classList.toggle('in', parseFloat(h.dataset.t)*k < 44);
+      });
+    });
+  }
+
+  function renderPages(){
+    var L = layout();
+    var host = $('pages'); host.innerHTML = '';
+    if(!L.pages.length){
+      var d = document.createElement('div'); d.className = 'empty';
+      d.textContent = 'ابتدا ابعاد جدول را وارد کنید و «ساخت جدول» را بزنید تا پیش‌نمایش کاغذ A4 اینجا نمایش داده شود.';
+      host.appendChild(d);
+      $('layoutInfo').textContent = '';
+      return;
+    }
+    var total = 0;
+    L.pages.forEach(function(items,i){
+      var wrap = document.createElement('div'); wrap.className = 'pagewrap';
+      var lab = document.createElement('div'); lab.className = 'plabel';
+      lab.textContent = 'صفحه ' + toFa(i+1) + ' — ' + toFa(items.length) + ' جدول';
+      var scaler = document.createElement('div'); scaler.className = 'scaler';
+      var sheet = document.createElement('div'); sheet.className = 'sheet';
+      items.forEach(function(it){ sheet.appendChild(makeGrid(it)); total++; });
+      scaler.appendChild(sheet);
+      items.forEach(function(it){
+        var hv = document.createElement('div');
+        hv.className = 'hov' + (it.c.id===S.active ? ' on' : '');
+        hv.dataset.id = it.c.id;
+        hv.dataset.l = (E.side.value==='right') ? (PW - it.x - it.w) : it.x;
+        hv.dataset.t = it.y; hv.dataset.w = it.w; hv.dataset.h = it.h;
+        hv.innerHTML = '<div class="tbw"><div class="tb">' +
+          '<button type="button" data-a="add" title="افزودن جدول" aria-label="افزودن جدول">'+IC('plus')+'</button>' +
+          '<button type="button" data-a="copy" title="کپی جدول فعلی" aria-label="کپی جدول فعلی">'+IC('copy')+'</button>' +
+          '<button type="button" data-a="del" class="danger" title="حذف این جدول" aria-label="حذف این جدول">'+IC('trash')+'</button></div></div>';
+        hv.addEventListener('click',function(e){
+          var b = e.target.closest('button'), id = parseInt(hv.dataset.id,10);
+          if(b){
+            e.stopPropagation();
+            if(b.dataset.a === 'add') addAfter(id); else if(b.dataset.a === 'copy') copyClass(id); else delClass(id);
+          }else{
+            if(isMobile() && id !== S.active){
+              selectClass(id,false);
+            }else{
+              selectClass(id,true);
+            }
+          }
+        });
+        scaler.appendChild(hv);
+      });
+      wrap.appendChild(lab); wrap.appendChild(scaler); host.appendChild(wrap);
+    });
+    $('layoutInfo').textContent = toFa(total) + ' جدول روی ' + toFa(L.pages.length) + ' صفحه A4 چیده شد.' +
+      (L.over ? ' — یکی از جدول‌ها از کاغذ بزرگ‌تر است.' : '');
+    $('layoutInfo').className = 'count linfo' + (L.over ? ' warn' : '');
+    fitText();
+    scalePreview();
+  }
+
+  function renderAll(){ renderPages(); updateCount(); save(); }
+
+  /* ---------- events ---------- */
+  $('title').addEventListener('input',function(){ cur().title = this.value; renderChips(); save(); });
+  ['dimH','dimW','dimR'].forEach(function(id){ $(id).addEventListener('input',updateRowInfo); });
+
+  $('buildBtn').addEventListener('click',function(){
+    var h = parseFloat($('dimH').value), w = parseFloat($('dimW').value), r = parseInt($('dimR').value,10);
+    var msg = $('buildMsg');
+    if(!(h>=1 && h<=29)){ msg.textContent = 'طول باید بین ۱ تا ۲۹ سانتی‌متر باشد.'; return; }
+    if(!(w>=1 && w<=20)){ msg.textContent = 'عرض باید بین ۱ تا ۲۰ سانتی‌متر باشد.'; return; }
+    if(!(r>=1 && r<=150)){ msg.textContent = 'تعداد سطر باید بین ۱ تا ۱۵۰ باشد.'; return; }
+    var c = cur(); c.h = h; c.w = w; c.rows = r; c.built = true;
+    syncForm(); renderChips(); renderAll();
+  });
+
+  $('names').addEventListener('input',function(){ cur().names = this.value; renderAll(); });
+
+  $('addBtn').addEventListener('click',function(){
+    $('newTitle').value = 'کلاس ' + toFa(S.classes.length+1);
+    $('addBox').hidden = false;
+  });
+  $('addCancel').addEventListener('click',function(){ $('addBox').hidden = true; });
+  Array.prototype.forEach.call(document.getElementsByName('addMode'),function(r){
+    r.addEventListener('change',function(){
+      $('copyRow').hidden = (document.querySelector('input[name=addMode]:checked').value !== 'copy');
+    });
+  });
+  $('addOk').addEventListener('click',function(){
+    var mode = document.querySelector('input[name=addMode]:checked').value;
+    var title = $('newTitle').value.trim() || ('کلاس ' + toFa(S.classes.length+1));
+    var c;
+    if(mode === 'copy'){
+      var id = parseInt($('copySrc').value,10), src = null;
+      S.classes.forEach(function(k){ if(k.id===id) src = k; });
+      c = mkClass(title, src || cur());
+      if(src){ c.names = src.names; c.built = src.built; }
+    }else{
+      c = mkClass(title, cur());
+    }
+    S.classes.push(c); S.active = c.id;
+    $('addBox').hidden = true;
+    syncForm(); renderChips(); renderAll();
+  });
+  $('delBtn').addEventListener('click',function(){ delClass(cur().id); });
+  $('copyBtn').addEventListener('click',function(){ copyClass(cur().id); });
+
+  SET.forEach(function(k){ E[k].addEventListener('input',renderAll); });
+  E.sort.addEventListener('change',renderAll);
+  E.lines.addEventListener('change',renderAll);
+
+  $('print').addEventListener('click',function(){ fitText(); window.print(); });
+
+  /* ---------- خروجی PDF (بدون کتابخانه) ---------- */
+  var DPI = 300, K = DPI/25.4;
+  function drawPage(ctx, W, H, items, grids){
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#000';
+    var lines = E.lines.checked, bw = lines ? num(E.bw,0.25) : 0;
+    var al = E.align.value;
+    items.forEach(function(it,gi){
+      var grid = grids[gi], c = it.c;
+      var left = (E.side.value==='right') ? (PW - it.x - it.w) : it.x, top = it.y, w = it.w, h = it.h;
+      if(lines){
+        ctx.fillRect(left*K, top*K, w*K, bw*K);
+        ctx.fillRect(left*K, (top+h-bw)*K, w*K, bw*K);
+        ctx.fillRect(left*K, top*K, bw*K, h*K);
+        ctx.fillRect((left+w-bw)*K, top*K, bw*K, h*K);
+      }
+      var ch = (h - 2*bw)/c.rows, chPx = ch*K, padPx = 1*K;
+      var cellL = (left+bw)*K, cellW = (w-2*bw)*K, availW = cellW - 2*padPx;
+      var leftX = cellL + padPx, rightX = cellL + cellW - padPx;
+      for(var i=0;i<c.rows;i++){
+        var cellTop = (top + bw + i*ch)*K, last = (i === c.rows-1);
+        if(lines && !last) ctx.fillRect(cellL, cellTop + chPx - bw*K, cellW, bw*K);
+        var span = grid.children[i].firstChild, txt = span.textContent;
+        if(!txt) continue;
+        var px = (parseFloat(span.style.fontSize) || 9) * DPI/72;
+        ctx.font = E.weight.value + ' ' + px + 'px ' + E.font.value;
+        ctx.direction = 'rtl';
+        var tw = ctx.measureText(txt).width;
+        while(tw > availW && px > 10){ px -= 1; ctx.font = E.weight.value + ' ' + px + 'px ' + E.font.value; tw = ctx.measureText(txt).width; }
+        var cy = cellTop + (chPx - (last ? 0 : bw*K))/2;
+        var m = ctx.measureText('هلپ'), by = cy;
+        if(m.fontBoundingBoxAscent != null){ ctx.textBaseline = 'alphabetic'; by = cy + (m.fontBoundingBoxAscent - m.fontBoundingBoxDescent)/2; }
+        else ctx.textBaseline = 'middle';
+        if(al === 'left'){ ctx.textAlign = 'left'; ctx.fillText(txt, leftX, by); }
+        else if(al === 'center'){ ctx.textAlign = 'center'; ctx.fillText(txt, (leftX+rightX)/2, by); }
+        else if(al === 'justify' && txt.indexOf(' ') > -1){
+          var words = txt.split(' ').filter(Boolean), ww = [], sum = 0;
+          words.forEach(function(wd){ var x = ctx.measureText(wd).width; ww.push(x); sum += x; });
+          var gap = (availW - sum)/(words.length-1); if(gap < 0.2*px) gap = 0.2*px;
+          ctx.textAlign = 'right';
+          var x = rightX;
+          words.forEach(function(wd,k){ ctx.fillText(wd, x, by); x -= ww[k] + gap; });
+        }
+        else { ctx.textAlign = 'right'; ctx.fillText(txt, rightX, by); }
+      }
+    });
+  }
+  function buildPdf(jpegs, W, H){
+    var enc = new TextEncoder(), parts = [], len = 0, offs = {};
+    function add(x){ var b = (typeof x === 'string') ? enc.encode(x) : x; parts.push(b); len += b.length; }
+    function pad10(n){ var s = String(n); while(s.length < 10) s = '0' + s; return s; }
+    var n = jpegs.length, kids = [];
+    for(var i=0;i<n;i++) kids.push((3+3*i) + ' 0 R');
+    add('%PDF-1.4\n');
+    offs[1] = len; add('1 0 obj\n<</Type/Catalog/Pages 2 0 R>>\nendobj\n');
+    offs[2] = len; add('2 0 obj\n<</Type/Pages/Kids[' + kids.join(' ') + ']/Count ' + n + '>>\nendobj\n');
+    for(var p=0;p<n;p++){
+      var pid = 3+3*p, cid = pid+1, iid = pid+2, cs = 'q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+      offs[pid] = len; add(pid + ' 0 obj\n<</Type/Page/Parent 2 0 R/MediaBox[0 0 595.28 841.89]/Resources<</XObject<</Im0 ' + iid + ' 0 R>>>>/Contents ' + cid + ' 0 R>>\nendobj\n');
+      offs[cid] = len; add(cid + ' 0 obj\n<</Length ' + cs.length + '>>\nstream\n' + cs + '\nendstream\nendobj\n');
+      offs[iid] = len; add(iid + ' 0 obj\n<</Type/XObject/Subtype/Image/Width ' + W + '/Height ' + H + '/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ' + jpegs[p].length + '>>\nstream\n');
+      add(jpegs[p]); add('\nendstream\nendobj\n');
+    }
+    var total = 3 + 3*n, xpos = len;
+    add('xref\n0 ' + total + '\n0000000000 65535 f \n');
+    for(var id=1; id<total; id++) add(pad10(offs[id]) + ' 00000 n \n');
+    add('trailer\n<</Size ' + total + '/Root 1 0 R>>\nstartxref\n' + xpos + '\n%%EOF');
+    return new Blob(parts, {type:'application/pdf'});
+  }
+  async function exportPdf(){
+    var L = layout();
+    if(!L.pages.length){ $('layoutInfo').textContent = 'ابتدا یک جدول بسازید.'; return; }
+    var btn = $('pdf'), lbl = $('pdfLbl');
+    btn.disabled = true; lbl.textContent = '...';
+    try{
+      fitText();
+      var sheets = document.querySelectorAll('#pages .sheet');
+      var W = Math.round(PW*K), H = Math.round(297*K);
+      var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      var ctx = cv.getContext('2d'), jpegs = [];
+      for(var i=0;i<L.pages.length;i++){
+        drawPage(ctx, W, H, L.pages[i], sheets[i].children);
+        var blob = await new Promise(function(res){ cv.toBlob(res,'image/jpeg',0.93); });
+        jpegs.push(new Uint8Array(await blob.arrayBuffer()));
+      }
+      var pdf = buildPdf(jpegs, W, H);
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(pdf); a.download = 'چاپ-لیست-کلاسی.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+    }catch(err){
+      $('layoutInfo').textContent = 'ساخت PDF ممکن نشد؛ از دکمه چاپ و گزینه Save as PDF استفاده کنید.';
+    }
+    btn.disabled = false; lbl.textContent = 'PDF';
+  }
+  $('pdf').addEventListener('click',exportPdf);
+  window.addEventListener('beforeprint',fitText);
+  window.addEventListener('resize',scalePreview);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitText);
+
+  /* ---------- System fonts ---------- */
+  $('sysFonts').addEventListener('click',function(){
+    var info = $('fontInfo');
+    if(!window.queryLocalFonts){
+      info.textContent = 'این مرورگر دسترسی به فونت‌های سیستم را پشتیبانی نمی‌کند (Chrome یا Edge را امتحان کنید).';
+      return;
+    }
+    window.queryLocalFonts().then(function(list){
+      var fams = {};
+      list.forEach(function(f){ fams[f.family] = 1; });
+      var names = Object.keys(fams).sort(function(a,b){return a.localeCompare(b);});
+      names.forEach(function(n){ ensureFontOption('"'+n.replace(/"/g,'')+'",Tahoma,sans-serif'); });
+      renderFontOptions(fontSearchEl ? fontSearchEl.value : '');
+      info.textContent = toFa(names.length) + ' فونت از سیستم بارگذاری شد؛ از فهرست «فونت» انتخاب کنید.';
+    }).catch(function(){ info.textContent = 'اجازه دسترسی به فونت‌ها داده نشد.'; });
+  });
+
+  /* ---------- Font search ---------- */
+  var fontSearchEl = $('fontSearch');
+  var fontWrap = $('fontSearchWrap');
+  function applyFontFilter(){
+    if(fontWrap) fontWrap.classList.toggle('hasq', fontSearchEl.value.length > 0);
+    renderFontOptions(fontSearchEl.value);
+  }
+  if(fontSearchEl){
+    fontSearchEl.addEventListener('input', applyFontFilter);
+    fontSearchEl.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        if(E.font.options.length){
+          var pick = E.font.options[0].value;
+          if(E.font.options.length > 1 && pick === E.font.value) pick = E.font.options[1].value;
+          E.font.value = pick;
+          renderAll();
+        }
+      }else if(e.key === 'Escape'){
+        fontSearchEl.value = ''; applyFontFilter();
+      }
+    });
+  }
+  if($('fontClear')){
+    $('fontClear').addEventListener('click', function(){
+      fontSearchEl.value = '';
+      applyFontFilter();
+      fontSearchEl.focus();
+    });
+  }
+  E.font.addEventListener('change', function(){
+    if(fontSearchEl && fontSearchEl.value){
+      fontSearchEl.value = '';
+      if(fontWrap) fontWrap.classList.remove('hasq');
+      renderFontOptions('', E.font.value);
+    }
+  });
+
+  /* ---------- init ---------- */
+  collectFonts();
+  if(!load()){ S.classes = [ mkClass('کلاس ۱') ]; S.active = S.classes[0].id; }
+  renderChips(); syncForm(); renderAll();
+})();
+</script>
+</body>
+</html>
