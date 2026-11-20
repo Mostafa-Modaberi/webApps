@@ -1351,8 +1351,14 @@
                                     <strong style="color:var(--text); font-size:14px; display:block;">حمایت مالی از طریق کارت بانکی سامان</strong>
                                     <span style="color:var(--text-secondary); font-size:12.5px;">به نام مصطفی مدبری</span>
                                 </div>
-                                <div style="direction:ltr; text-align:left; font-size:18px; font-weight:800; letter-spacing:1.5px; color:var(--primary);">
-                                    6219&nbsp;8614&nbsp;7928&nbsp;3995
+                                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                    <div id="supportCardNumber" style="direction:ltr; text-align:left; font-size:18px; font-weight:800; letter-spacing:1.5px; color:var(--primary);">
+                                        6219&nbsp;8614&nbsp;7928&nbsp;3995
+                                    </div>
+                                    <button type="button" class="btn btn-outline" onclick="copySupportCardNumber()" style="white-space:nowrap;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg>
+                                        کپی شماره کارت
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2327,6 +2333,28 @@
                 showToast('تصویر لوگو با موفقیت بارگذاری شد');
             };
             reader.readAsDataURL(file);
+        }
+
+        async function copySupportCardNumber() {
+            const cardNumber = '6219861479283995';
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(cardNumber);
+                } else {
+                    const input = document.createElement('textarea');
+                    input.value = cardNumber;
+                    input.style.position = 'fixed';
+                    input.style.opacity = '0';
+                    document.body.appendChild(input);
+                    input.select();
+                    const copied = document.execCommand('copy');
+                    input.remove();
+                    if (!copied) throw new Error('Copy failed');
+                }
+                showToast('شماره کارت با موفقیت کپی شد');
+            } catch (error) {
+                showToast('کپی خودکار انجام نشد؛ شماره کارت را دستی انتخاب کنید');
+            }
         }
 
         function showToast(message) {
