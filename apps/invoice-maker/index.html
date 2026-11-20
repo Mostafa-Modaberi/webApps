@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه جامع فاکتورساز</title>
+    
+    <!-- فونت شبنم -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/shabnam-font@v5.0.0/dist/font-face.css">
+    
+    <!-- کتابخانه SheetJS برای خروجی اکسل -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- کتابخانه Chart.js برای نمودارهای مالی -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* فونت بی نازنین برای قالب رسمی کلاسیک */
+        @font-face {
+            font-family: 'B Nazanin';
+            src: local('B Nazanin'), local('BNazanin'), url('https://cdn.fontcdn.ir/Font/Persian/BNazanin/BNazanin.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'B Nazanin';
+            src: local('B Nazanin Bold'), local('BNazanin Bold'), url('https://cdn.fontcdn.ir/Font/Persian/BNazanin/BNazanin-Bold.woff') format('woff');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        :root {
+            --bg: #F4F7FB;
+            --surface: #FFFFFF;
+            --surface-2: #F8FAFF;
+            --surface-3: #EEF3F9;
+
+            --primary: #3156A6;
+            --primary-dark: #27478D;
+            --primary-light: #EDF2FF;
+
+            --accent: #7C5CFF;
+
+            --text: #172033;
+            --text-secondary: #526174;
+            --muted: #718096;
+
+            --border: #E2E8F0;
+            --border-dark: #CBD5E1;
+
+            --success: #16845B;
+            --danger: #D14343;
+
+            --shadow-sm: 0 4px 14px rgba(35, 55, 85, .06);
+            --shadow: 0 18px 50px rgba(35, 55, 85, .09);
+
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Shabnam', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            font-size: 13.5px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .app-header {
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left-side { display: flex; align-items: center; gap: 14px; }
+
+        .hamburger-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .hamburger-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .brand-container { display: flex; align-items: center; gap: 10px; }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(124, 92, 255, 0.25);
+        }
+
+        .brand-text h1 { font-size: 15px; font-weight: 800; color: var(--text); }
+        .brand-text p { font-size: 11px; color: var(--muted); }
+
+        .header-date-badge {
+            background: var(--surface-3);
+            color: var(--primary-dark);
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border);
+        }
+
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+
+        .action-buttons {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            white-space: nowrap !important;
+        }
+
+        .btn-tb-edit, .btn-tb-delete {
+            height: 32px;
+            padding: 0 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            line-height: 1;
+        }
+
+        .btn-tb-edit {
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            border-color: rgba(49, 86, 166, 0.2);
+        }
+
+        .btn-tb-edit:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-tb-delete {
+            background: rgba(209, 67, 67, 0.08);
+            color: var(--danger);
+            border-color: rgba(209, 67, 67, 0.2);
+        }
+
+        .btn-tb-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .excel-export-card {
+            background: linear-gradient(135deg, #107C41 0%, #1F4E3D 100%);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .excel-export-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+        }
+
+        .excel-export-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .excel-export-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 2fr 2fr;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .excel-export-grid label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .excel-export-grid select {
+            width: 100%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ffffff;
+            border-radius: var(--radius-sm);
+            padding: 0 10px;
+            font-weight: 700;
+            color: #107C41;
+            outline: none;
+        }
+
+        .btn-excel {
+            background: #ffffff;
+            color: #107C41;
+            font-weight: 800;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .btn-excel:hover {
+            background: #e2f5ea;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+        }
+
+        .invoice-paper.theme-classic { border-top: 6px solid var(--primary); }
+
+        .invoice-paper.theme-mono {
+            border: 2px solid #000 !important;
+            background: #fff !important;
+            color: #000 !important;
+        }
+        .invoice-paper.theme-mono .inv-header { border-bottom: 2px solid #000 !important; }
+        .invoice-paper.theme-mono .inv-header::after { display: none; }
+        .invoice-paper.theme-mono .inv-title h1 { color: #000 !important; }
+        .invoice-paper.theme-mono .info-box { border: 1px solid #000 !important; background: transparent !important; }
+        .invoice-paper.theme-mono .info-box-title { color: #000 !important; border-bottom: 1px solid #000 !important; }
+        .invoice-paper.theme-mono .inv-table { border: 1px solid #000 !important; }
+        .invoice-paper.theme-mono .inv-table th { background: #f0f0f0 !important; color: #000 !important; border: 1px solid #000 !important; }
+        .invoice-paper.theme-mono .inv-table td { border: 1px solid #000 !important; color: #000 !important; }
+        .invoice-paper.theme-mono .summary-box { border: 1px solid #000 !important; }
+        .invoice-paper.theme-mono .summary-line { border-bottom: 1px solid #000 !important; color: #000 !important; }
+        .invoice-paper.theme-mono .summary-line:last-child { background: #eee !important; color: #000 !important; }
+
+        .invoice-paper.theme-modern {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 20px rgba(124, 92, 255, 0.15);
+        }
+        .invoice-paper.theme-modern .inv-header {
+            background: var(--surface-2);
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            border-bottom: none;
+        }
+        .invoice-paper.theme-modern .inv-title h1 { color: var(--accent); }
+        .invoice-paper.theme-modern .inv-table th { background: var(--primary); color: #fff; }
+
+        .invoice-paper.theme-corporate {
+            border: 3px double var(--primary-dark);
+            padding: 12mm 14mm;
+        }
+        .invoice-paper.theme-corporate .inv-header { text-align: center; border-bottom: 1px solid var(--primary-dark); }
+        .invoice-paper.theme-corporate .info-box { border-radius: 0; border: 1px solid var(--primary-dark); }
+
+        .invoice-paper.theme-iranian-classic {
+            font-family: 'B Nazanin', Tahoma, Arial, sans-serif !important;
+            border-radius: 0 !important;
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: #fff !important;
+        }
+        .invoice-paper.theme-iranian-classic * {
+            font-family: 'B Nazanin', Tahoma, Arial, sans-serif !important;
+            border-radius: 0 !important;
+        }
+        .invoice-paper.theme-iranian-classic .inv-header {
+            border-bottom: 2px solid #000 !important;
+            margin-bottom: 15px !important;
+            padding-bottom: 10px !important;
+        }
+        .invoice-paper.theme-iranian-classic .inv-header::after { display: none !important; }
+        .invoice-paper.theme-iranian-classic .inv-title h1,
+        .invoice-paper.theme-iranian-classic .inv-title h2 { color: #000 !important; }
+        .invoice-paper.theme-iranian-classic .inv-title h1 { font-size: 26px !important; font-weight: bold; }
+        .invoice-paper.theme-iranian-classic .inv-title h2 { font-size: 15px !important; font-weight: normal; }
+        
+        .invoice-paper.theme-iranian-classic .inv-meta {
+            background: transparent !important;
+            border: 1px solid #000 !important;
+            padding: 6px 10px !important;
+        }
+        
+        .invoice-paper.theme-iranian-classic .info-box {
+            border: 1px solid #000 !important;
+            background: transparent !important;
+            padding: 8px 10px !important;
+        }
+        .invoice-paper.theme-iranian-classic .info-box-title {
+            color: #000 !important;
+            border-bottom: 1px solid #000 !important;
+            font-weight: bold;
+            font-size: 16px !important;
+            padding-bottom: 6px !important;
+            margin-bottom: 6px !important;
+        }
+        .invoice-paper.theme-iranian-classic .info-line span { color: #000 !important; }
+        
+        .invoice-paper.theme-iranian-classic .inv-table {
+            border: 2px solid #000 !important;
+            border-collapse: collapse !important;
+        }
+        .invoice-paper.theme-iranian-classic .inv-table th,
+        .invoice-paper.theme-iranian-classic .inv-table td {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            padding: 6px 8px !important;
+        }
+        .invoice-paper.theme-iranian-classic .inv-table th {
+            background: #e9e9e9 !important;
+            border-bottom: 2px solid #000 !important;
+            font-weight: bold;
+        }
+        
+        .invoice-paper.theme-iranian-classic .summary-box {
+            border: 2px solid #000 !important;
+        }
+        .invoice-paper.theme-iranian-classic .summary-line {
+            border-bottom: 1px solid #000 !important;
+            color: #000 !important;
+            padding: 6px 10px !important;
+        }
+        .invoice-paper.theme-iranian-classic .summary-line:last-child {
+            background: #e9e9e9 !important;
+            font-weight: bold !important;
+            border-bottom: none !important;
+        }
+        
+        .invoice-paper.theme-iranian-classic .inv-words,
+        .invoice-paper.theme-iranian-classic .inv-notes {
+            background: transparent !important;
+            border: 1px solid #000 !important;
+            color: #000 !important;
+        }
+
+        .invoice-paper.theme-iranian-classic .inv-table th, 
+        .invoice-paper.theme-iranian-classic .inv-table td,
+        .invoice-paper.theme-iranian-classic .info-line,
+        .invoice-paper.theme-iranian-classic .inv-meta,
+        .invoice-paper.theme-iranian-classic .inv-words,
+        .invoice-paper.theme-iranian-classic .inv-notes,
+        .invoice-paper.theme-iranian-classic .summary-line,
+        .invoice-paper.theme-iranian-classic .signature-line {
+            font-size: 15px !important;
+        }
+        
+        .invoice-paper.with-page-border::before {
+            content: '';
+            position: absolute;
+            top: 7mm;
+            bottom: 7mm;
+            left: 7mm;
+            right: 7mm;
+            border: 2px solid var(--primary-dark);
+            border-radius: 12px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .invoice-paper.theme-iranian-classic.with-page-border::before {
+            border-radius: 0 !important;
+            border: 2px solid #000;
+        }
+        
+        .invoice-paper.theme-mono.with-page-border::before {
+            border: 2px solid #000;
+        }
+
+        .drawer-overlay {
+            position: fixed; inset: 0; background: rgba(23, 32, 51, 0.4);
+            backdrop-filter: blur(4px); z-index: 200; opacity: 0;
+            pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .drawer-overlay.active { opacity: 1; pointer-events: auto; }
+
+        .nav-drawer {
+            position: fixed; top: 0; right: 0; bottom: 0; width: 290px;
+            background: var(--surface); z-index: 201; transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
+        }
+        .nav-drawer.active { transform: translateX(0); }
+
+        .drawer-header {
+            padding: 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface-2);
+        }
+        .drawer-title { font-size: 15px; font-weight: 800; color: var(--primary); }
+        
+        .drawer-close {
+            background: transparent; border: none; cursor: pointer; color: var(--muted);
+            width: 32px; height: 32px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .drawer-close:hover { background: var(--surface-3); color: var(--text); }
+
+        .drawer-menu { padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; }
+
+        .drawer-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            border-radius: var(--radius-sm); color: var(--text-secondary);
+            font-weight: 700; font-size: 13.5px; cursor: pointer;
+            transition: all 0.2s ease; text-decoration: none; border: 1px solid transparent;
+        }
+        .drawer-item:hover { background: var(--surface-2); color: var(--primary); }
+        .drawer-item.active {
+            background: var(--primary-light); color: var(--primary);
+            border-color: rgba(49, 86, 166, 0.15);
+        }
+
+        .preview-toggle-btn {
+            position: fixed; bottom: 24px; right: 24px; z-index: 150;
+            background: var(--accent); color: white; border: none;
+            border-radius: 50px; padding: 12px 20px;
+            box-shadow: 0 4px 15px rgba(124, 92, 255, 0.4); cursor: pointer;
+            display: flex; align-items: center; gap: 8px; font-weight: 700;
+            font-size: 13.5px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .preview-toggle-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(124, 92, 255, 0.5); }
+        .preview-toggle-btn.active { background: var(--surface); color: var(--accent); border: 2px solid var(--accent); }
+
+        .views-container { flex: 1; height: calc(100vh - 64px); overflow: hidden; position: relative; }
+        .view-page { display: none; height: 100%; width: 100%; overflow-y: auto; }
+        .view-page.active { display: flex; flex-direction: column; }
+
+        .main-content-layout { display: flex; width: 100%; height: 100%; overflow: hidden; }
+
+        .editor-panel {
+            width: 580px; min-width: 400px; max-width: 650px; background: var(--surface);
+            border-left: 1px solid var(--border); overflow-y: auto; display: flex;
+            flex-direction: column; padding: 20px; gap: 16px; z-index: 10;
+        }
+
+        .section-box {
+            border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 16px; background: var(--surface); box-shadow: var(--shadow-sm);
+        }
+        .section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--surface-3);
+        }
+        .section-title {
+            font-size: 13.5px; font-weight: 700; color: var(--primary);
+            display: flex; align-items: center; gap: 8px; position: relative; padding-right: 10px;
+        }
+        .section-title::before {
+            content: ''; position: absolute; right: 0; top: 2px; bottom: 2px; width: 3.5px;
+            background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .form-control {
+            width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--border-dark);
+            border-radius: var(--radius-sm); font-size: 13px; color: var(--text);
+            background: var(--surface); outline: none; transition: all 0.2s ease;
+        }
+        textarea.form-control { height: auto; padding: 10px 12px; resize: vertical; }
+        .form-control:hover { border-color: var(--primary); }
+        .form-control:focus { border-color: #4B6FC4; box-shadow: 0 0 0 4px rgba(75, 111, 196, 0.11); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .logo-upload-wrapper {
+            background: var(--surface-2); border: 1.5px dashed var(--border-dark);
+            border-radius: var(--radius-sm); padding: 12px; text-align: center;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .logo-upload-wrapper:hover { border-color: var(--primary); background: var(--primary-light); }
+        .logo-upload-wrapper input[type="file"] { display: none; }
+        .upload-label {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            color: var(--primary); font-weight: 600; cursor: pointer; font-size: 12.5px;
+        }
+
+        .btn {
+            height: 38px; padding: 0 16px; border: none; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 13px; font-weight: 700; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            text-decoration: none; white-space: nowrap;
+        }
+        .btn:hover { transform: translateY(-1.5px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; box-shadow: 0 4px 12px rgba(49, 86, 166, 0.25);
+        }
+        .btn-primary:hover { box-shadow: 0 6px 16px rgba(49, 86, 166, 0.35); }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #16845B, #0e5c3f); color: white;
+            box-shadow: 0 4px 12px rgba(22, 132, 91, 0.25);
+        }
+        
+        .btn-outline { background-color: var(--surface); border: 1px solid var(--border-dark); color: var(--text-secondary); }
+        .btn-outline:hover { background-color: var(--surface-2); border-color: var(--primary); color: var(--primary); }
+
+        .btn-danger-icon {
+            background: rgba(209, 67, 67, 0.08); border: 1px solid rgba(209, 67, 67, 0.2);
+            color: var(--danger); width: 36px; height: 36px; border-radius: var(--radius-sm);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease; flex-shrink: 0;
+        }
+        .btn-danger-icon:hover { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
+
+        .item-editor-row {
+            display: grid; grid-template-columns: 2fr 0.8fr 1.2fr 1fr auto; gap: 6px;
+            margin-bottom: 10px; align-items: center; background: var(--surface-2);
+            padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); position: relative;
+        }
+        .item-editor-row .form-control { height: 36px; padding: 0 8px; font-size: 12px; }
+
+        .product-dropdown {
+            position: absolute; top: 100%; right: 0; left: 0; background: white;
+            border: 1px solid var(--border-dark); border-radius: var(--radius-sm);
+            box-shadow: var(--shadow); z-index: 50; max-height: 180px; overflow-y: auto; display: none;
+        }
+        .product-dropdown-item {
+            padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between;
+            font-size: 12px; border-bottom: 1px solid var(--surface-3);
+        }
+        .product-dropdown-item:hover { background: var(--primary-light); color: var(--primary); }
+
+        .preview-panel {
+            flex: 1; overflow-y: auto; padding: 32px; display: flex;
+            justify-content: center; align-items: flex-start; background: var(--bg);
+            transition: all 0.3s ease; opacity: 1; visibility: visible; transform: translateX(0);
+        }
+        
+        .preview-panel.hidden { display: none !important; }
+        .editor-panel.expanded { width: 100%; max-width: none; }
+
+        .invoice-paper {
+            width: 210mm; min-height: 297mm; aspect-ratio: 210 / 297;
+            background: var(--surface); padding: 16mm 18mm; box-shadow: var(--shadow);
+            border-radius: var(--radius); border: 1px solid var(--border);
+            position: relative; box-sizing: border-box; display: flex;
+            flex-direction: column; justify-content: space-between;
+        }
+
+        .inv-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding-bottom: 16px; border-bottom: 2px solid var(--primary); margin-bottom: 20px; position: relative;
+        }
+        .inv-header::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; right: 0;
+            height: 1px; background: var(--accent); opacity: 0.4;
+        }
+
+        .inv-logo { flex: 1; display: flex; justify-content: center; }
+        .inv-logo img { max-width: 110px; max-height: 70px; object-fit: contain; border-radius: 6px; }
+        .inv-title { text-align: right; flex: 1; padding: 0 10px; }
+        .inv-title h1 { font-size: 22px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; margin-bottom: 4px; }
+        .inv-title h2 { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+
+        .inv-meta {
+            flex: 1; text-align: left; font-size: 12.5px; line-height: 1.8;
+            background: var(--surface-2); padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+        }
+        .inv-meta strong { color: var(--text); }
+
+        .inv-info-boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .info-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; background: #FCFDFF; }
+        .info-box-title {
+            font-weight: 700; margin-bottom: 8px; font-size: 13px;
+            color: var(--primary); padding-bottom: 4px; border-bottom: 1px solid var(--surface-3);
+        }
+        .info-line { display: flex; margin-bottom: 4px; font-size: 12.5px; }
+        .info-line:last-child { margin-bottom: 0; }
+        .info-line span:first-child { width: 85px; color: var(--muted); flex-shrink: 0; }
+        .info-line span:last-child { font-weight: 600; color: var(--text); flex: 1; word-break: break-word; }
+
+        .inv-table {
+            width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px;
+            border: 1px solid var(--border-dark); border-radius: var(--radius-sm); overflow: hidden;
+        }
+        .inv-table th, .inv-table td {
+            border-bottom: 1px solid var(--border); border-left: 1px solid var(--border);
+            padding: 9px 10px; text-align: center; font-size: 12.5px;
+        }
+        .inv-table th:last-child, .inv-table td:last-child { border-left: none; }
+        .inv-table tr:last-child td { border-bottom: none; }
+        .inv-table th { background-color: var(--surface-3); color: var(--text-secondary); font-weight: 700; font-size: 12px; }
+        .inv-table tbody tr:nth-child(even) { background-color: #FBFDFF; }
+        .inv-table td.desc-cell { text-align: right; }
+
+        .inv-bottom-section { display: grid; grid-template-columns: 1fr 280px; gap: 20px; margin-bottom: 20px; }
+        .inv-notes-wrapper { display: flex; flex-direction: column; gap: 12px; }
+        .inv-words {
+            background: var(--surface-2); padding: 10px 14px; border-radius: var(--radius-sm);
+            font-size: 12.5px; border: 1px dashed var(--border-dark); color: var(--text);
+        }
+        .inv-notes {
+            font-size: 12px; color: var(--text-secondary); line-height: 1.6;
+            background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px;
+        }
+
+        .summary-box { border: 1px solid var(--border-dark); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
+        .summary-line {
+            display: flex; justify-content: space-between; padding: 8px 12px;
+            border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-secondary);
+        }
+        .summary-line:last-child {
+            border-bottom: none; background-color: var(--primary-light);
+            color: var(--primary-dark); font-weight: 800; font-size: 14px;
+        }
+
+        .inv-signatures { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 30px; }
+        .signature { text-align: center; width: 160px; }
+        .signature-line {
+            border-top: 1px dashed var(--border-dark); margin-top: 50px;
+            padding-top: 8px; font-size: 12px; color: var(--muted); font-weight: 600;
+        }
+
+        .full-page-view { padding: 30px; width: 100%; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+        .page-header-box {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--surface); padding: 20px 24px; border-radius: var(--radius);
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+        }
+        .page-title h2 { font-size: 18px; font-weight: 800; color: var(--primary); }
+        .page-title p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        .data-table-container {
+            background: var(--surface); border-radius: var(--radius);
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            overflow-x: auto;
+        }
+        .table-toolbar {
+            padding: 16px; border-bottom: 1px solid var(--border);
+            display: flex; gap: 12px; background: var(--surface-2); align-items: center; justify-content: space-between;
+        }
+        .custom-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .custom-table th, .custom-table td {
+            padding: 14px 16px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px;
+        }
+        .custom-table th { background: var(--surface-3); color: var(--text-secondary); font-weight: 700; }
+        .custom-table tr:last-child td { border-bottom: none; }
+
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .kpi-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .kpi-title { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+        .kpi-value { font-size: 20px; font-weight: 800; color: var(--primary); }
+
+        .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .chart-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm);
+            display: flex; flex-direction: column; gap: 16px; min-height: 300px;
+        }
+        .chart-card-title { font-size: 14px; font-weight: 700; color: var(--text); }
+        .canvas-container { width: 100%; height: 240px; position: relative; }
+
+        .about-container { display: flex; flex-direction: column; gap: 24px; max-width: 860px; margin: 0 auto; width: 100%; }
+        .about-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius-lg); padding: 28px 32px; box-shadow: var(--shadow-sm);
+            position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 18px;
+        }
+        .about-card::before {
+            content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%;
+            background: linear-gradient(180deg, var(--primary), var(--accent));
+        }
+
+        .about-header-box { display: flex; align-items: center; gap: 16px; }
+        .about-header-icon {
+            width: 52px; height: 52px; border-radius: var(--radius);
+            background: var(--primary-light); color: var(--primary);
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .about-header-title h2 { font-size: 20px; font-weight: 800; color: var(--primary); margin-bottom: 2px; }
+        .about-header-title p { font-size: 12px; color: var(--muted); }
+
+        .about-text { font-size: 14px; line-height: 1.9; color: var(--text); text-align: justify; }
+
+        .about-services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 6px; }
+        .about-service-card {
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column; gap: 10px;
+            transition: all 0.2s ease;
+        }
+        .about-service-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        .about-service-title { font-size: 14px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .about-service-desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.7; }
+
+        .about-commitment {
+            background: linear-gradient(135deg, rgba(49, 86, 166, 0.05), rgba(124, 92, 255, 0.08));
+            border: 1px solid rgba(49, 86, 166, 0.2); border-radius: var(--radius); padding: 18px 22px;
+            font-size: 13.5px; line-height: 1.8; color: var(--primary-dark); font-weight: 600;
+        }
+
+        .about-contact-box {
+            background: var(--surface-3); border: 1px solid var(--border); border-radius: var(--radius);
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        }
+        .instagram-badge {
+            display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045);
+            color: white; font-weight: 800; padding: 8px 16px; border-radius: 50px; text-decoration: none;
+            box-shadow: 0 4px 12px rgba(253, 29, 29, 0.25); font-size: 13px; transition: transform 0.2s ease;
+        }
+        .instagram-badge:hover { transform: scale(1.04); }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px); z-index: 300; display: none;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--surface); border-radius: var(--radius); width: 460px;
+            padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border);
+            max-width: 90vw;
+        }
+        
+        .toast-notification {
+            position: fixed; bottom: 24px; left: 24px; background: var(--text);
+            color: white; padding: 12px 20px; border-radius: var(--radius-sm);
+            font-weight: 600; font-size: 13px; box-shadow: var(--shadow); z-index: 999;
+            transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-notification.show { transform: translateY(0); opacity: 1; }
+
+        @media (max-width: 992px) {
+            .main-content-layout { flex-direction: column; height: auto; overflow: visible; }
+            .editor-panel { width: 100%; max-width: none; min-width: 0; border-left: none; border-bottom: 1px solid var(--border); }
+            .preview-panel { padding: 16px; overflow: visible; }
+            .preview-toggle-btn { bottom: 16px; right: 16px; }
+            .invoice-paper { width: 100%; max-width: 210mm; aspect-ratio: 210 / 297; min-height: auto; padding: 12mm; }
+            .inv-bottom-section { grid-template-columns: 1fr; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .full-page-view { padding: 15px; }
+            .excel-export-grid { grid-template-columns: 1fr 1fr; }
+            .about-contact-box { flex-direction: column; align-items: flex-start; }
+        }
+
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            body { background: white !important; color: black !important; }
+            
+            .app-header, .editor-panel, .drawer-overlay, .nav-drawer, .toast-notification, .preview-toggle-btn { display: none !important; }
+            .main-content-layout, .views-container, .view-page { display: block !important; height: auto !important; overflow: visible !important; }
+            
+            #view-inventory, #view-analytics, #view-history, #view-about, #view-settings { display: none !important; }
+            #view-invoice { display: block !important; }
+
+            .preview-panel { padding: 0 !important; background: white !important; display: block !important; overflow: visible !important; }
+            .invoice-paper {
+                width: 210mm !important; height: 297mm !important; aspect-ratio: 210 / 297 !important;
+                padding: 12mm 15mm !important; box-shadow: none !important; border: none !important;
+                border-radius: 0 !important; margin: 0 auto !important; page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <header class="app-header">
+            <div class="header-left-side">
+                <button class="hamburger-btn" onclick="toggleDrawer()" title="منوی ناوبری">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
+                <div class="brand-container">
+                    <div class="brand-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1>فاکتورساز و مدیریت مالی</h1>
+                        <p id="header-subtitle">صفحه اصلی: صدور فاکتور</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-actions" id="invoice-header-actions">
+                <div class="header-date-badge">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span id="header-today-date">امروز: -</span>
+                </div>
+                <button class="btn btn-outline" onclick="resetForm()">فاکتور جدید</button>
+                <button class="btn btn-outline" onclick="saveInvoice()">ذخیره فاکتور</button>
+                <button class="btn btn-primary" onclick="printInvoice()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    چاپ / PDF
+                </button>
+            </div>
+        </header>
+
+        <div class="drawer-overlay" id="drawer-overlay" onclick="toggleDrawer()"></div>
+        <aside class="nav-drawer" id="nav-drawer">
+            <div class="drawer-header">
+                <span class="drawer-title">منوی سامانه</span>
+                <button class="drawer-close" onclick="toggleDrawer()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <nav class="drawer-menu">
+                <a class="drawer-item active" onclick="switchView('invoice')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    صدور فاکتور جدید
+                </a>
+                <a class="drawer-item" onclick="switchView('history')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    تاریخچه فاکتورها و گزارشات 
+                </a>
+                <a class="drawer-item" onclick="switchView('inventory')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                    مدیریـت انبـار و کالاها
+                </a>
+                <a class="drawer-item" onclick="switchView('analytics')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    داشبـــورد و تحلیل مالی
+                </a>
+                <a class="drawer-item" onclick="switchView('settings')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                    اطلاعات فروشگاه و تنظیمات
+                </a>
+                <a class="drawer-item" onclick="switchView('about')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    درباره ما و راهنما
+                </a>
+            </nav>
+        </aside>
+
+        <button class="preview-toggle-btn active" id="previewToggleBtn" onclick="togglePreview()" style="display: none;">
+            <svg id="previewToggleIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span id="previewToggleText">مخفی کردن پیش‌نمایش</span>
+        </button>
+
+        <main class="views-container">
+            
+            <!-- 1. صدور فاکتور -->
+            <div class="view-page active" id="view-invoice">
+                <div class="main-content-layout">
+                    
+                    <!-- پنل ویرایشگر -->
+                    <div class="editor-panel" id="editorPanel">
+                        
+                        <!-- تنظیمات سربرگ فاکتور -->
+                        <div class="section-box">
+                            <div class="section-header">
+                                <span class="section-title">تنظیمات اصلی فاکتور</span>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>قالب ظاهری فاکتور</label>
+                                    <select class="form-control" id="invoiceTheme" onchange="updateTheme(this.value)">
+                                        <option value="classic">کلاسیک (استاندارد)</option>
+                                        <option value="iranian-classic" selected>فاکتور کلاسیک (رسمی ایرانی)</option>
+                                        <option value="mono">سیاه و سفید (اقتصادی)</option>
+                                        <option value="modern">مدرن رنگی</option>
+                                        <option value="corporate">رسمی شرکتی</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>عنوان فاکتور</label>
+                                    <input type="text" class="form-control" id="invTitleInput" value="فاکتور فروش کالا و خدمات" oninput="renderInvoice()">
+                                </div>
+                            </div>
+                            <div class="form-group" style="background: var(--surface-2); padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; margin: 0;">
+                                    <input type="checkbox" id="pageBorderToggle" checked onchange="togglePageBorder()" style="width: 16px; height: 16px; accent-color: var(--primary);">
+                                    <span style="font-size: 12.5px; font-weight: 700; color: var(--text);">نمایش کادر مستطیلی دور فاکتور</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- اطلاعات خریدار -->
+                        <div class="section-box">
+                            <div class="section-header">
+                                <span class="section-title">اطلاعات خریدار و فاکتور</span>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>نام خریدار / مشتری</label>
+                                    <input type="text" class="form-control" id="buyerName" value="جناب آقای محمدی" oninput="renderInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>شماره تماس</label>
+                                    <input type="text" class="form-control" id="buyerPhone" value="09123456789" oninput="renderInvoice()">
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>کد ملی / شناسه اقتصادی</label>
+                                    <input type="text" class="form-control" id="buyerCode" value="0012345678" oninput="renderInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>شماره فاکتور</label>
+                                    <input type="text" class="form-control" id="invNumber" value="INV-1001" oninput="renderInvoice()">
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>تاریخ صدور</label>
+                                    <input type="text" class="form-control" id="invDate" oninput="renderInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>تاریخ سررسید / مهلت پرداخت</label>
+                                    <input type="text" class="form-control" id="invDueDate" value="نقدی" oninput="renderInvoice()">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>نشانی خریدار</label>
+                                <input type="text" class="form-control" id="buyerAddress" value="خراسان رضوی، کاشمر، خیابان امام خمینی" oninput="renderInvoice()">
+                            </div>
+                        </div>
+
+                        <!-- اقلام فاکتور -->
+                        <div class="section-box">
+                            <div class="section-header">
+                                <span class="section-title">اقلام و کالاها</span>
+                                <button class="btn btn-outline" style="height:30px; font-size:12px;" onclick="addItemRow()">+ افزودن سطر</button>
+                            </div>
+                            <div id="itemsContainer"></div>
+                        </div>
+
+                        <!-- تخفیف، مالیات و یادداشت -->
+                        <div class="section-box">
+                            <div class="section-header">
+                                <span class="section-title">تخفیف، مالیات و توضیحات</span>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group">
+                                    <label>مبلغ تخفیف کلی (تومان)</label>
+                                    <input type="number" class="form-control" id="discountInput" value="0" min="0" oninput="renderInvoice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>درصد ارزش افزوده (%)</label>
+                                    <input type="number" class="form-control" id="taxRateInput" value="10" min="0" max="100" oninput="renderInvoice()">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>توضیحات و شرایط فاکتور</label>
+                                <textarea class="form-control" id="invNotesInput" rows="2" oninput="renderInvoice()">کالاهای فروخته شده در صورت سلامت فیزیکی تا ۷ روز با ارائه فاکتور رسمی تعویض می‌گردند.</textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- پیش نمایش A4 -->
+                    <div class="preview-panel" id="previewPanel">
+                        <div class="invoice-paper theme-iranian-classic with-page-border" id="invoicePaper">
+                            <div>
+                                <div class="inv-header">
+                                    <div class="inv-title">
+                                        <h1 id="pvInvTitle">فاکتور فروش کالا و خدمات</h1>
+                                        <h2 id="pvSellerNameHeader">شرکت تعاونی خدمات رایانه‌ای تختی</h2>
+                                    </div>
+                                    <div class="inv-logo" id="invLogoContainer" style="display:none;"></div>
+                                    <div class="inv-meta">
+                                        <div>شماره: <strong id="pvInvNumber">INV-1001</strong></div>
+                                        <div>تاریخ: <strong id="pvInvDate">-</strong></div>
+                                        <div>سررسید: <strong id="pvInvDueDate">نقدی</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="inv-info-boxes">
+                                    <div class="info-box">
+                                        <div class="info-box-title">مشخصات فروشنده</div>
+                                        <div class="info-line"><span>نام / شرکت:</span><span id="pvSellerName">شرکت تعاونی خدمات رایانه‌ای تختی</span></div>
+                                        <div class="info-line"><span>شناسه ملی:</span><span id="pvSellerCode">14001234567</span></div>
+                                        <div class="info-line"><span>تلفن:</span><span id="pvSellerPhone">051-55220000</span></div>
+                                        <div class="info-line"><span>نشانی:</span><span id="pvSellerAddress">خراسان رضوی، کاشمر</span></div>
+                                    </div>
+                                    <div class="info-box">
+                                        <div class="info-box-title">مشخصات خریدار</div>
+                                        <div class="info-line"><span>نام خریدار:</span><span id="pvBuyerName">جناب آقای محمدی</span></div>
+                                        <div class="info-line"><span>کد ملی/شناسه:</span><span id="pvBuyerCode">0012345678</span></div>
+                                        <div class="info-line"><span>تلفن:</span><span id="pvBuyerPhone">09123456789</span></div>
+                                        <div class="info-line"><span>نشانی:</span><span id="pvBuyerAddress">خراسان رضوی، کاشمر</span></div>
+                                    </div>
+                                </div>
+
+                                <table class="inv-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:38px;">ردیف</th>
+                                            <th>شرح کالا یا خدمات</th>
+                                            <th style="width:60px;">تعداد</th>
+                                            <th style="width:110px;">قیمت واحد (تومان)</th>
+                                            <th style="width:120px;">مبلغ کل (تومان)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pvItemsTableBody"></tbody>
+                                </table>
+                            </div>
+
+                            <div>
+                                <div class="inv-bottom-section">
+                                    <div class="inv-notes-wrapper">
+                                        <div class="inv-words">
+                                            مبلغ به حروف: <strong id="pvAmountInWords">صفر تومان</strong>
+                                        </div>
+                                        <div class="inv-notes" id="pvNotes">توضیحات فاکتور...</div>
+                                    </div>
+                                    <div class="summary-box">
+                                        <div class="summary-line"><span>جمع اقلام:</span><span id="pvSubtotal">۰</span></div>
+                                        <div class="summary-line"><span>تخفیف:</span><span id="pvDiscount">۰</span></div>
+                                        <div class="summary-line"><span>مالیات بر ارزش افزوده:</span><span id="pvTax">۰</span></div>
+                                        <div class="summary-line"><span>مبلغ قابل پرداخت:</span><span id="pvGrandTotal">۰ تومان</span></div>
+                                    </div>
+                                </div>
+
+                                <div class="inv-signatures">
+                                    <div class="signature">
+                                        <div>مهر و امضای فروشنده</div>
+                                        <div class="signature-line"></div>
+                                    </div>
+                                    <div class="signature">
+                                        <div>امضای خریدار</div>
+                                        <div class="signature-line"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 2. تاریخچه فاکتورها -->
+            <div class="view-page" id="view-history">
+                <div class="full-page-view">
+                    
+                    <div class="page-header-box">
+                        <div class="page-title">
+                            <h2>تاریخچه فاکتورهای ثبت شده و خروجی اکسل</h2>
+                            <p>مدیریت فاکتورهای صادر شده و دانلود خروجی‌های ماهانه در دو قالب مجزا</p>
+                        </div>
+                        <button class="btn btn-success" onclick="openExcelModal()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            دانلود خروجی اکسل ماهانه
+                        </button>
+                    </div>
+
+                    <!-- کارت خروجی اکسل در صفحه تاریخچه -->
+                    <div class="excel-export-card">
+                        <div class="excel-export-header">
+                            <div class="excel-export-title">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+                                <span>تولید فایل اکسل گزارش ماهانه</span>
+                            </div>
+                            <span style="font-size:12px; opacity: 0.9;">گزارش استاندارد با فرمت Microsoft Excel (.xlsx)</span>
+                        </div>
+                        <div class="excel-export-grid">
+                            <div>
+                                <label>انتخاب سال:</label>
+                                <select id="historyExportYear">
+                                    <option value="1403">1403</option>
+                                    <option value="1404" selected>1404</option>
+                                    <option value="1405">1405</option>
+                                    <option value="1406">1406</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>انتخاب ماه:</label>
+                                <select id="historyExportMonth">
+                                    <option value="01">01 - فروردین</option>
+                                    <option value="02">02 - اردیبهشت</option>
+                                    <option value="03">03 - خرداد</option>
+                                    <option value="04">04 - تیر</option>
+                                    <option value="05">05 - مرداد</option>
+                                    <option value="06">06 - شهریور</option>
+                                    <option value="07">07 - مهر</option>
+                                    <option value="08">08 - آبان</option>
+                                    <option value="09">09 - آذر</option>
+                                    <option value="10">10 - دی</option>
+                                    <option value="11">11 - بهمن</option>
+                                    <option value="12">12 - اسفند</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>&nbsp;</label>
+                                <button class="btn-excel btn-block" onclick="exportMonthlyInvoices('historyExportYear', 'historyExportMonth')">
+                                     گزارش فاکتورهای مـاه
+                                </button>
+                            </div>
+                            <div>
+                                <label>&nbsp;</label>
+                                <button class="btn-excel btn-block" onclick="exportMonthlySoldItems('historyExportYear', 'historyExportMonth')">
+                                     گزارش کالاهای فروخته شده
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-table-container">
+                        <div class="table-toolbar">
+                            <input type="text" class="form-control" id="historySearchInput" placeholder="جستجو بر اساس شماره فاکتور یا نام خریدار..." oninput="renderHistoryTable()" style="max-width:320px;">
+                            <span style="font-size:12px; color:var(--muted);" id="historyCountBadge">تعداد فاکتورها: ۰</span>
+                        </div>
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>کد / شماره فاکتور</th>
+                                    <th>تاریخ صدور</th>
+                                    <th>خریدار</th>
+                                    <th>موارد فاکتور</th>
+                                    <th>مبلغ کل (تومان)</th>
+                                    <th style="width:160px; text-align:center;">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. انبارداری -->
+            <div class="view-page" id="view-inventory">
+                <div class="full-page-view">
+                    <div class="page-header-box">
+                        <div class="page-title">
+                            <h2>مدیریت انبار و کالاها</h2>
+                            <p>تعریف کالاهای انبار برای تکمیل خودکار اقلام در هنگام صدور فاکتور</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="openProductModal()">+ تعریف کالا / خدمت جدید</button>
+                    </div>
+
+                    <div class="data-table-container">
+                        <div class="table-toolbar">
+                            <input type="text" class="form-control" id="inventorySearch" placeholder="جستجوی کالا..." oninput="renderInventoryTable()" style="max-width:300px;">
+                        </div>
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>کد کالا</th>
+                                    <th>نام کالا / خدمت</th>
+                                    <th>واحد سنجش</th>
+                                    <th>قیمت خرید (تومان)</th>
+                                    <th>قیمت فروش (تومان)</th>
+                                    <th>موجودی</th>
+                                    <th style="width:150px; text-align:center;">عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. گزارشات و تحلیل -->
+            <div class="view-page" id="view-analytics">
+                <div class="full-page-view">
+                    <div class="page-header-box">
+                        <div class="page-title">
+                            <h2>داشبورد گزارشات و تحلیل مالی</h2>
+                            <p>بررسی آماری عملکرد فروش، درآمد و سود انبار</p>
+                        </div>
+                        <button class="btn btn-success" onclick="openExcelModal()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                            دانلود گزارش کامل اکسل
+                        </button>
+                    </div>
+
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <span class="kpi-title">مجموع کل فروش</span>
+                            <span class="kpi-value" id="kpiTotalSales">۰ تومان</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-title">تعداد فاکتورهای صادره</span>
+                            <span class="kpi-value" id="kpiTotalInvoices">۰</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-title">تعداد اقلام فروخته شده</span>
+                            <span class="kpi-value" id="kpiTotalItemsSold">۰</span>
+                        </div>
+                        <div class="kpi-card">
+                            <span class="kpi-title">میانگین مبلغ هر فاکتور</span>
+                            <span class="kpi-value" id="kpiAvgInvoice">۰ تومان</span>
+                        </div>
+                    </div>
+
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <span class="chart-card-title">روند فروش</span>
+                            <div class="canvas-container">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <span class="chart-card-title">پرفروش‌ترین کالاها</span>
+                            <div class="canvas-container">
+                                <canvas id="topProductsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. تنظیمات -->
+            <div class="view-page" id="view-settings">
+                <div class="full-page-view" style="max-width:800px;">
+                    <div class="page-header-box">
+                        <div class="page-title">
+                            <h2>اطلاعات فروشگاه و کسب‌وکار</h2>
+                            <p>این اطلاعات در بخش فروشنده تمام فاکتورها درج می‌گردد</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSettings()">ذخیره تنظیمات</button>
+                    </div>
+
+                    <div class="section-box">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>نام فروشگاه / شرکت</label>
+                                <input type="text" class="form-control" id="settingSellerName" value="شرکت تعاونی خدمات رایانه‌ای تختی">
+                            </div>
+                            <div class="form-group">
+                                <label>شناسه ملی / کد اقتصادی</label>
+                                <input type="text" class="form-control" id="settingSellerCode" value="14001234567">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>شماره تلفن / همراه</label>
+                                <input type="text" class="form-control" id="settingSellerPhone" value="051-55220000">
+                            </div>
+                            <div class="form-group">
+                                <label>لوگوی فروشگاه</label>
+                                <div class="logo-upload-wrapper" onclick="document.getElementById('logoFileInput').click()">
+                                    <input type="file" id="logoFileInput" accept="image/*" onchange="handleLogoUpload(event)">
+                                    <div class="upload-label">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                        انتخاب تصویر لوگو
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>آدرس کامل فروشگاه</label>
+                            <input type="text" class="form-control" id="settingSellerAddress" value="استان خراسان رضوی، شهرستان کاشمر">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. درباره ما -->
+            <div class="view-page" id="view-about">
+                <div class="full-page-view">
+                    <div class="about-container">
+                        <div class="about-card">
+                            <div class="about-header-box">
+                                <div class="about-header-icon">
+                                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                </div>
+                                <div class="about-header-title">
+                                    <h2>شرکت تعاونی خدمات رایانه‌ای تختی</h2>
+                                    <p>مرجع تخصصی تامین، پشتیبانی و ارائه خدمات فناوری اطلاعات در استان خراسان رضوی و شهرستان کاشمر</p>
+                                </div>
+                            </div>
+
+                            <p class="about-text">
+                                به فروشگاه و شرکت تعاونی خدمات رایانه‌ای تختی خوش آمدید. شرکت تعاونی خدمات رایانه‌ای تختی با پشتوانه سال‌ها تجربه محیطی و ارتباط مستقیم با مشتریان، در ۲۷ اردیبهشت ۱۴۰۳ به صورت رسمی به ثبت رسید تا گامی بلندتر در جهت ارتقای سطح خدمات دیجیتال و تامین تجهیزات سخت‌افزاری منطقه بردارد.
+                            </p>
+
+                            <div class="about-services-grid">
+                                <div class="about-service-card">
+                                    <div class="about-service-title">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                                        فروش تخصصی
+                                    </div>
+                                    <div class="about-service-desc">
+                                        عرضه انواع رایانه‌های رومیزی، لپ‌تاپ، قطعات سخت‌افزاری و لوازم جانبی از برترین برندها با کیفیت و قیمت رقابتی.
+                                    </div>
+                                </div>
+
+                                <div class="about-service-card">
+                                    <div class="about-service-title">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                                        خدمات فنی و پشتیبانی
+                                    </div>
+                                    <div class="about-service-desc">
+                                        عیب‌یابی، ارتقا، تعمیرات تخصصی سیستم‌ها و ارائه راهکارهای نرم‌افزاری پیشرفته.
+                                    </div>
+                                </div>
+
+                                <div class="about-service-card">
+                                    <div class="about-service-title">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        خدمات اینترنتی و دیجیتال
+                                    </div>
+                                    <div class="about-service-desc">
+                                        انجام کلیه امور اینترنتی، ثبت‌نام‌ها و راه‌اندازی شبکه‌های خانگی و اداری.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="about-commitment">
+                                ما در مجموعه‌ی تختی متعهد هستیم تا با ارائه مشاوره صادقانه، خدمات سریع و پشتیبانی مطمئن، بهترین تجربه خرید و دریافت خدمات رایانه‌ای را برای شما خلق کنیم.
+                            </div>
+
+                            <div class="about-contact-box">
+                                <div>
+                                    <strong style="color:var(--text); font-size:14px; display:block;">ارتباط مستقیم با ما:</strong>
+                                    <span style="color:var(--text-secondary); font-size:12.5px;">جهت مشاهده آخرین محصولات، اطلاع از تخفیف‌ها و ارتباط با تیم پشتیبانی</span>
+                                </div>
+                                <a href="https://instagram.com/takhticompany" target="_blank" class="instagram-badge">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                                    صفحه اینستاگرام: takhticompany
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- مدال دانلود اکسل ماهانه -->
+    <div class="modal-overlay" id="excelModal">
+        <div class="modal-box">
+            <div class="section-header" style="margin-bottom:16px;">
+                <span class="section-title" style="color: #107C41;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                    دانلود گزارش اکسل ماهانه (.xlsx)
+                </span>
+                <button class="drawer-close" onclick="closeExcelModal()">×</button>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:16px;">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>سال شمسی</label>
+                        <select class="form-control" id="modalExportYear">
+                            <option value="1403">1403</option>
+                            <option value="1404" selected>1404</option>
+                            <option value="1405">1405</option>
+                            <option value="1406">1406</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ماه</label>
+                        <select class="form-control" id="modalExportMonth">
+                            <option value="01">01 - فروردین</option>
+                            <option value="02">02 - اردیبهشت</option>
+                            <option value="03">03 - خرداد</option>
+                            <option value="04">04 - تیر</option>
+                            <option value="05">05 - مرداد</option>
+                            <option value="06">06 - شهریور</option>
+                            <option value="07">07 - مهر</option>
+                            <option value="08">08 - آبان</option>
+                            <option value="09">09 - آذر</option>
+                            <option value="10">10 - دی</option>
+                            <option value="11">11 - بهمن</option>
+                            <option value="12">12 - اسفند</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="border-top:1px solid var(--border); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
+                    <button class="btn btn-success" style="background:#107C41; height:44px;" onclick="exportMonthlyInvoices('modalExportYear', 'modalExportMonth')">
+                         اکسل فاکتورهای ماه (کد، تاریخ، موارد، مبلغ)
+                    </button>
+                    <button class="btn btn-success" style="background:#136236; height:44px;" onclick="exportMonthlySoldItems('modalExportYear', 'modalExportMonth')">
+                         اکسل کالاهای فروخته شده (ردیف، کالا، تعداد، مبلغ)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مدال افزودن/ویرایش کالا -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-box">
+            <div class="section-header">
+                <span class="section-title" id="productModalTitle">تعریف کالا / خدمت جدید</span>
+                <button class="drawer-close" onclick="closeProductModal()">×</button>
+            </div>
+            <input type="hidden" id="pmId">
+            <div class="form-group">
+                <label>کد کالا</label>
+                <input type="text" class="form-control" id="pmCode" placeholder="مثلا PRD-101">
+            </div>
+            <div class="form-group">
+                <label>نام کالا یا خدمت</label>
+                <input type="text" class="form-control" id="pmName" placeholder="عنوان کامل کالا">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>واحد سنجش</label>
+                    <input type="text" class="form-control" id="pmUnit" value="عدد">
+                </div>
+                <div class="form-group">
+                    <label>موجودی اول دوره</label>
+                    <input type="number" class="form-control" id="pmStock" value="100">
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>قیمت خرید (تومان)</label>
+                    <input type="number" class="form-control" id="pmBuyPrice" value="0">
+                </div>
+                <div class="form-group">
+                    <label>قیمت فروش (تومان)</label>
+                    <input type="number" class="form-control" id="pmSellPrice" value="0">
+                </div>
+            </div>
+            <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:8px;">
+                <button class="btn btn-outline" onclick="closeProductModal()">انصراف</button>
+                <button class="btn btn-primary" onclick="saveProduct()">ذخیره کالا</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- اعلان پیام متنی -->
+    <div class="toast-notification" id="toast">پیام سیستم</div>
+
+    <script>
+        // Data State
+        let products = [];
+        let invoices = [];
+        let settings = {
+            sellerName: 'شرکت تعاونی خدمات رایانه‌ای تختی',
+            sellerCode: '14001234567',
+            sellerPhone: '051-55220000',
+            sellerAddress: 'خراسان رضوی، کاشمر',
+            logoUrl: ''
+        };
+
+        let itemsCount = 0;
+        let salesChartObj = null;
+        let topProductsChartObj = null;
+
+        // Initialize App
+        window.onload = function() {
+            loadFromStorage();
+            initDate();
+            if (products.length === 0) seedSampleProducts();
+            if (invoices.length === 0) seedSampleInvoices();
+            
+            addItemRow();
+            renderInvoice();
+            renderInventoryTable();
+            renderHistoryTable();
+            renderAnalytics();
+            
+            const currentShamsiMonth = getTodayShamsiMonth();
+            const currentShamsiYear = getTodayShamsiYear();
+            
+            document.querySelectorAll('#historyExportYear, #modalExportYear').forEach(s => s.value = currentShamsiYear);
+            document.querySelectorAll('#historyExportMonth, #modalExportMonth').forEach(s => s.value = currentShamsiMonth);
+        };
+
+        function initDate() {
+            const todayStr = getTodayShamsiDate();
+            document.getElementById('header-today-date').innerText = 'امروز: ' + todayStr;
+            document.getElementById('invDate').value = todayStr;
+        }
+
+        function getTodayShamsiDate() {
+            const date = new Date();
+            return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date).replace(/[/]/g, '/');
+        }
+
+        function getTodayShamsiYear() {
+            const date = new Date();
+            const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { year: 'numeric' }).formatToParts(date);
+            const yr = parts.find(p => p.type === 'year').value;
+            return toEnglishDigits(yr);
+        }
+
+        function getTodayShamsiMonth() {
+            const date = new Date();
+            const parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { month: '2-digit' }).formatToParts(date);
+            const mo = parts.find(p => p.type === 'month').value;
+            return toEnglishDigits(mo);
+        }
+
+        function toEnglishDigits(str) {
+            if(!str) return '';
+            return str.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[0-9]/g, d => d);
+        }
+
+        function toPersianDigits(num) {
+            if (num === null || num === undefined) return '';
+            const str = num.toString();
+            return str.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+        }
+
+        function formatMoney(num) {
+            if (!num || isNaN(num)) return '۰';
+            return toPersianDigits(Number(num).toLocaleString('fa-IR'));
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('inv_products', JSON.stringify(products));
+            localStorage.setItem('inv_invoices', JSON.stringify(invoices));
+            localStorage.setItem('inv_settings', JSON.stringify(settings));
+        }
+
+        function loadFromStorage() {
+            try {
+                const p = localStorage.getItem('inv_products');
+                const i = localStorage.getItem('inv_invoices');
+                const s = localStorage.getItem('inv_settings');
+                if (p) products = JSON.parse(p);
+                if (i) invoices = JSON.parse(i);
+                if (s) {
+                    settings = JSON.parse(s);
+                    document.getElementById('settingSellerName').value = settings.sellerName || 'شرکت تعاونی خدمات رایانه‌ای تختی';
+                    document.getElementById('settingSellerCode').value = settings.sellerCode || '';
+                    document.getElementById('settingSellerPhone').value = settings.sellerPhone || '';
+                    document.getElementById('settingSellerAddress').value = settings.sellerAddress || '';
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function seedSampleProducts() {
+            products = [
+                { id: '1', code: 'PRD-101', name: 'لپ‌تاپ ایسوس 15 اینچ', unit: 'دستگاه', buyPrice: 32000000, sellPrice: 38500000, stock: 15 },
+                { id: '2', code: 'PRD-102', name: 'ماوس بی‌سیم گیمینگ', unit: 'عدد', buyPrice: 450000, sellPrice: 750000, stock: 50 },
+                { id: '3', code: 'PRD-103', name: 'کیبورد مکانیکی', unit: 'عدد', buyPrice: 1800000, sellPrice: 2400000, stock: 30 },
+                { id: '4', code: 'PRD-104', name: 'مانیتور 24 اینچ سامسونگ', unit: 'دستگاه', buyPrice: 5500000, sellPrice: 6900000, stock: 12 }
+            ];
+            saveToStorage();
+        }
+
+        function seedSampleInvoices() {
+            const yr = getTodayShamsiYear();
+            const mo = getTodayShamsiMonth();
+            invoices = [
+                {
+                    id: 'INV-1001',
+                    number: 'INV-1001',
+                    date: `${yr}/${mo}/05`,
+                    buyerName: 'جناب آقای محمدی',
+                    buyerPhone: '09123456789',
+                    buyerCode: '0012345678',
+                    buyerAddress: 'کاشمر، خیابان امام خمینی',
+                    items: [
+                        { name: 'لپ‌تاپ ایسوس 15 اینچ', qty: 1, price: 38500000, total: 38500000, unit: 'دستگاه' },
+                        { name: 'ماوس بی‌سیم گیمینگ', qty: 2, price: 750000, total: 1500000, unit: 'عدد' }
+                    ],
+                    discount: 500000,
+                    taxRate: 10,
+                    taxAmount: 3950000,
+                    grandTotal: 43450000
+                },
+                {
+                    id: 'INV-1002',
+                    number: 'INV-1002',
+                    date: `${yr}/${mo}/12`,
+                    buyerName: 'اداره فناوری و ارتباطات',
+                    buyerPhone: '051-55221111',
+                    buyerCode: '1010223344',
+                    buyerAddress: 'کاشمر، میدان مرکزی',
+                    items: [
+                        { name: 'مانیتور 24 اینچ سامسونگ', qty: 3, price: 6900000, total: 20700000, unit: 'دستگاه' },
+                        { name: 'کیبورد مکانیکی', qty: 3, price: 2400000, total: 7200000, unit: 'عدد' }
+                    ],
+                    discount: 0,
+                    taxRate: 10,
+                    taxAmount: 2790000,
+                    grandTotal: 30690000
+                }
+            ];
+            saveToStorage();
+        }
+
+        function toggleDrawer() {
+            document.getElementById('nav-drawer').classList.toggle('active');
+            document.getElementById('drawer-overlay').classList.toggle('active');
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.drawer-item').forEach(el => el.classList.remove('active'));
+            
+            const target = document.getElementById('view-' + viewName);
+            if (target) target.classList.add('active');
+            
+            const titles = {
+                'invoice': 'صفحه اصلی: صدور فاکتور',
+                'history': 'تاریخچه فاکتورها و خروجی اکسل',
+                'inventory': 'مدیریت انبار و کالاها',
+                'analytics': 'داشبورد و تحلیل مالی',
+                'settings': 'تنظیمات فروشگاه',
+                'about': 'درباره ما و خدمات شرکت تختی'
+            };
+            document.getElementById('header-subtitle').innerText = titles[viewName] || '';
+            
+            if (window.innerWidth <= 992) {
+                document.getElementById('nav-drawer').classList.remove('active');
+                document.getElementById('drawer-overlay').classList.remove('active');
+            }
+
+            if (viewName === 'analytics') renderAnalytics();
+            if (viewName === 'history') renderHistoryTable();
+            if (viewName === 'inventory') renderInventoryTable();
+        }
+
+        function togglePreview() {
+            const panel = document.getElementById('previewPanel');
+            const editor = document.getElementById('editorPanel');
+            const btn = document.getElementById('previewToggleBtn');
+            
+            panel.classList.toggle('hidden');
+            editor.classList.toggle('expanded');
+            btn.classList.toggle('active');
+            
+            const isHidden = panel.classList.contains('hidden');
+            document.getElementById('previewToggleText').innerText = isHidden ? 'نمایش پیش‌نمایش' : 'مخفی کردن پیش‌نمایش';
+        }
+
+        function addItemRow(itemData = null) {
+            itemsCount++;
+            const id = itemsCount;
+            const container = document.getElementById('itemsContainer');
+            
+            const row = document.createElement('div');
+            row.className = 'item-editor-row';
+            row.id = `item-row-${id}`;
+            
+            row.innerHTML = `
+                <div style="position:relative;">
+                    <input type="text" class="form-control item-name" id="item-name-${id}" placeholder="نام کالا یا خدمت..." value="${itemData ? itemData.name : ''}" oninput="handleItemInput(${id})" onfocus="showDropdown(${id})">
+                    <div class="product-dropdown" id="dropdown-${id}"></div>
+                </div>
+                <input type="number" class="form-control item-qty" id="item-qty-${id}" placeholder="تعداد" value="${itemData ? itemData.qty : 1}" min="1" oninput="renderInvoice()">
+                <input type="number" class="form-control item-price" id="item-price-${id}" placeholder="قیمت واحد" value="${itemData ? itemData.price : 0}" oninput="renderInvoice()">
+                <div style="font-size:11px; font-weight:700; text-align:center; color:var(--primary);" id="item-total-${id}">۰</div>
+                <button class="btn-danger-icon" onclick="removeItemRow(${id})" title="حذف سطر">×</button>
+            `;
+            
+            container.appendChild(row);
+            renderInvoice();
+        }
+
+        function removeItemRow(id) {
+            const row = document.getElementById(`item-row-${id}`);
+            if (row) row.remove();
+            renderInvoice();
+        }
+
+        function handleItemInput(id) {
+            showDropdown(id);
+            renderInvoice();
+        }
+
+        function showDropdown(id) {
+            const input = document.getElementById(`item-name-${id}`);
+            const dropdown = document.getElementById(`dropdown-${id}`);
+            if(!input || !dropdown) return;
+            const val = input.value.trim().toLowerCase();
+            
+            const filtered = products.filter(p => p.name.toLowerCase().includes(val) || p.code.toLowerCase().includes(val));
+            if (filtered.length === 0) {
+                dropdown.style.display = 'none';
+                return;
+            }
+            
+            dropdown.innerHTML = filtered.map(p => `
+                <div class="product-dropdown-item" onclick="selectProduct(${id}, '${p.id}')">
+                    <span>${p.name} (${p.code})</span>
+                    <span style="font-weight:700;">${formatMoney(p.sellPrice)} تومان</span>
+                </div>
+            `).join('');
+            dropdown.style.display = 'block';
+        }
+
+        function selectProduct(rowId, productId) {
+            const p = products.find(x => x.id === productId);
+            if (!p) return;
+            
+            document.getElementById(`item-name-${rowId}`).value = p.name;
+            document.getElementById(`item-price-${rowId}`).value = p.sellPrice;
+            document.getElementById(`dropdown-${rowId}`).style.display = 'none';
+            renderInvoice();
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.item-editor-row')) {
+                document.querySelectorAll('.product-dropdown').forEach(d => d.style.display = 'none');
+            }
+        });
+
+        function updateTheme(theme) {
+            const paper = document.getElementById('invoicePaper');
+            paper.className = 'invoice-paper theme-' + theme;
+            if (document.getElementById('pageBorderToggle').checked) {
+                paper.classList.add('with-page-border');
+            }
+        }
+
+        function togglePageBorder() {
+            const paper = document.getElementById('invoicePaper');
+            paper.classList.toggle('with-page-border');
+        }
+
+        function renderInvoice() {
+            document.getElementById('pvInvTitle').innerText = document.getElementById('invTitleInput').value || 'فاکتور فروش';
+            document.getElementById('pvInvNumber').innerText = document.getElementById('invNumber').value || '-';
+            document.getElementById('pvInvDate').innerText = document.getElementById('invDate').value || '-';
+            document.getElementById('pvInvDueDate').innerText = document.getElementById('invDueDate').value || '-';
+            
+            document.getElementById('pvBuyerName').innerText = document.getElementById('buyerName').value || '-';
+            document.getElementById('pvBuyerPhone').innerText = document.getElementById('buyerPhone').value || '-';
+            document.getElementById('pvBuyerCode').innerText = document.getElementById('buyerCode').value || '-';
+            document.getElementById('pvBuyerAddress').innerText = document.getElementById('buyerAddress').value || '-';
+            
+            document.getElementById('pvSellerName').innerText = settings.sellerName;
+            document.getElementById('pvSellerNameHeader').innerText = settings.sellerName;
+            document.getElementById('pvSellerCode').innerText = settings.sellerCode;
+            document.getElementById('pvSellerPhone').innerText = settings.sellerPhone;
+            document.getElementById('pvSellerAddress').innerText = settings.sellerAddress;
+
+            const logoCont = document.getElementById('invLogoContainer');
+            if (settings.logoUrl) {
+                logoCont.innerHTML = `<img src="${settings.logoUrl}" alt="Logo">`;
+                logoCont.style.display = 'flex';
+            } else {
+                logoCont.style.display = 'none';
+            }
+
+            const rows = document.querySelectorAll('.item-editor-row');
+            const tbody = document.getElementById('pvItemsTableBody');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            let index = 1;
+
+            rows.forEach(r => {
+                const id = r.id.replace('item-row-', '');
+                const name = document.getElementById(`item-name-${id}`)?.value || '';
+                const qty = Number(document.getElementById(`item-qty-${id}`)?.value) || 0;
+                const price = Number(document.getElementById(`item-price-${id}`)?.value) || 0;
+                const total = qty * price;
+                subtotal += total;
+
+                const totEl = document.getElementById(`item-total-${id}`);
+                if (totEl) totEl.innerText = formatMoney(total);
+
+                if (name.trim() !== '') {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${toPersianDigits(index++)}</td>
+                        <td class="desc-cell">${name}</td>
+                        <td>${toPersianDigits(qty)}</td>
+                        <td>${formatMoney(price)}</td>
+                        <td>${formatMoney(total)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (tbody.children.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="color:var(--muted); padding:20px;">هیچ کالایی اضافه نشده است</td></tr>`;
+            }
+
+            const discount = Number(document.getElementById('discountInput').value) || 0;
+            const taxRate = Number(document.getElementById('taxRateInput').value) || 0;
+            
+            const taxable = Math.max(0, subtotal - discount);
+            const taxAmount = Math.round(taxable * (taxRate / 100));
+            const grandTotal = taxable + taxAmount;
+
+            document.getElementById('pvSubtotal').innerText = formatMoney(subtotal) + ' تومان';
+            document.getElementById('pvDiscount').innerText = formatMoney(discount) + ' تومان';
+            document.getElementById('pvTax').innerText = formatMoney(taxAmount) + ' تومان';
+            document.getElementById('pvGrandTotal').innerText = formatMoney(grandTotal) + ' تومان';
+            
+            document.getElementById('pvNotes').innerText = document.getElementById('invNotesInput').value || '-';
+            document.getElementById('pvAmountInWords').innerText = numToPersianWords(grandTotal) + ' تومان';
+        }
+
+        function numToPersianWords(num) {
+            if (num === 0) return 'صفر';
+            if (!num || isNaN(num)) return 'صفر';
+            
+            const units = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+            const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+            const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+            const hundreds = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+            const scales = ['', 'هزار', 'میلیون', 'میلیارد'];
+
+            function convertChunk(n) {
+                let str = '';
+                let h = Math.floor(n / 100);
+                let t = Math.floor((n % 100) / 10);
+                let u = n % 10;
+
+                if (h > 0) {
+                    str += hundreds[h];
+                    if (t > 0 || u > 0) str += ' و ';
+                }
+                if (t === 1) {
+                    str += teens[u];
+                } else {
+                    if (t > 0) {
+                        str += tens[t];
+                        if (u > 0) str += ' و ';
+                    }
+                    if (u > 0) str += units[u];
+                }
+                return str;
+            }
+
+            let parts = [];
+            let scaleIdx = 0;
+            while (num > 0) {
+                let chunk = num % 1000;
+                if (chunk > 0) {
+                    let chunkStr = convertChunk(chunk);
+                    if (scales[scaleIdx]) chunkStr += ' ' + scales[scaleIdx];
+                    parts.unshift(chunkStr);
+                }
+                num = Math.floor(num / 1000);
+                scaleIdx++;
+            }
+            return parts.join(' و ');
+        }
+
+        function saveInvoice() {
+            const invNum = document.getElementById('invNumber').value.trim();
+            if (!invNum) {
+                showToast('لطفاً شماره فاکتور را وارد کنید');
+                return;
+            }
+
+            const items = [];
+            document.querySelectorAll('.item-editor-row').forEach(r => {
+                const id = r.id.replace('item-row-', '');
+                const name = document.getElementById(`item-name-${id}`)?.value || '';
+                const qty = Number(document.getElementById(`item-qty-${id}`)?.value) || 0;
+                const price = Number(document.getElementById(`item-price-${id}`)?.value) || 0;
+                if (name && qty) {
+                    items.push({ name, qty, price, total: qty * price });
+                }
+            });
+
+            if (items.length === 0) {
+                showToast('حداقل یک کالا باید در فاکتور باشد');
+                return;
+            }
+
+            const subtotal = items.reduce((a, b) => a + b.total, 0);
+            const discount = Number(document.getElementById('discountInput').value) || 0;
+            const taxRate = Number(document.getElementById('taxRateInput').value) || 0;
+            const taxable = Math.max(0, subtotal - discount);
+            const taxAmount = Math.round(taxable * (taxRate / 100));
+            const grandTotal = taxable + taxAmount;
+
+            const existingIndex = invoices.findIndex(i => i.id === invNum || i.number === invNum);
+            const invoiceObj = {
+                id: invNum,
+                number: invNum,
+                date: document.getElementById('invDate').value || getTodayShamsiDate(),
+                buyerName: document.getElementById('buyerName').value || '',
+                buyerPhone: document.getElementById('buyerPhone').value || '',
+                buyerCode: document.getElementById('buyerCode').value || '',
+                buyerAddress: document.getElementById('buyerAddress').value || '',
+                items,
+                discount,
+                taxRate,
+                taxAmount,
+                grandTotal
+            };
+
+            if (existingIndex >= 0) {
+                invoices[existingIndex] = invoiceObj;
+                showToast('فاکتور با موفقیت بروزرسانی شد');
+            } else {
+                invoices.unshift(invoiceObj);
+                showToast('فاکتور جدید با موفقیت ذخیره شد');
+            }
+
+            saveToStorage();
+            renderHistoryTable();
+        }
+
+        function resetForm() {
+            document.getElementById('buyerName').value = '';
+            document.getElementById('buyerPhone').value = '';
+            document.getElementById('buyerCode').value = '';
+            document.getElementById('buyerAddress').value = '';
+            document.getElementById('invNumber').value = 'INV-' + Math.floor(1000 + Math.random() * 9000);
+            document.getElementById('invDate').value = getTodayShamsiDate();
+            document.getElementById('invDueDate').value = 'نقدی';
+            document.getElementById('discountInput').value = '0';
+            document.getElementById('itemsContainer').innerHTML = '';
+            itemsCount = 0;
+            addItemRow();
+            renderInvoice();
+            showToast('فرم فاکتور برای صدور جدید آماده شد');
+        }
+
+        function printInvoice() {
+            window.print();
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            if (!tbody) return;
+            const searchVal = document.getElementById('historySearchInput')?.value.trim().toLowerCase() || '';
+
+            const filtered = invoices.filter(i => 
+                i.number.toLowerCase().includes(searchVal) || 
+                i.buyerName.toLowerCase().includes(searchVal)
+            );
+
+            document.getElementById('historyCountBadge').innerText = 'تعداد فاکتورها: ' + toPersianDigits(filtered.length);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:20px;">هیچ فاکتوری یافت نشد</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(inv => `
+                <tr>
+                    <td style="font-weight:700; color:var(--primary);">${inv.number}</td>
+                    <td>${inv.date}</td>
+                    <td>${inv.buyerName}</td>
+                    <td>${toPersianDigits(inv.items.length)} قلم کالا</td>
+                    <td style="font-weight:800; color:var(--success);">${formatMoney(inv.grandTotal)} تومان</td>
+                    <td style="text-align:center;">
+                        <div class="action-buttons">
+                            <button class="btn-tb-edit" onclick="loadInvoiceToEdit('${inv.id}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                ویرایش / نمایش
+                            </button>
+                            <button class="btn-tb-delete" onclick="deleteInvoice('${inv.id}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function loadInvoiceToEdit(id) {
+            const inv = invoices.find(i => i.id === id);
+            if (!inv) return;
+
+            document.getElementById('invNumber').value = inv.number;
+            document.getElementById('invDate').value = inv.date;
+            document.getElementById('buyerName').value = inv.buyerName || '';
+            document.getElementById('buyerPhone').value = inv.buyerPhone || '';
+            document.getElementById('buyerCode').value = inv.buyerCode || '';
+            document.getElementById('buyerAddress').value = inv.buyerAddress || '';
+            document.getElementById('discountInput').value = inv.discount || 0;
+            document.getElementById('taxRateInput').value = inv.taxRate || 10;
+
+            const container = document.getElementById('itemsContainer');
+            container.innerHTML = '';
+            itemsCount = 0;
+
+            if (inv.items && inv.items.length > 0) {
+                inv.items.forEach(item => addItemRow(item));
+            } else {
+                addItemRow();
+            }
+
+            switchView('invoice');
+            showToast('فاکتور ' + inv.number + ' جهت ویرایش بارگذاری شد');
+        }
+
+        function deleteInvoice(id) {
+            invoices = invoices.filter(i => i.id !== id);
+            saveToStorage();
+            renderHistoryTable();
+            showToast('فاکتور با موفقیت حذف شد');
+        }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            if (!tbody) return;
+            const searchVal = document.getElementById('inventorySearch')?.value.trim().toLowerCase() || '';
+            
+            const filtered = products.filter(p => 
+                p.name.toLowerCase().includes(searchVal) || 
+                p.code.toLowerCase().includes(searchVal)
+            );
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--muted); padding:20px;">هیچ کالایی یافت نشد</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(p => `
+                <tr>
+                    <td>${p.code}</td>
+                    <td style="font-weight:700;">${p.name}</td>
+                    <td>${p.unit || 'عدد'}</td>
+                    <td>${formatMoney(p.buyPrice)}</td>
+                    <td style="color:var(--primary); font-weight:700;">${formatMoney(p.sellPrice)}</td>
+                    <td>${toPersianDigits(p.stock)}</td>
+                    <td style="text-align:center;">
+                        <div class="action-buttons">
+                            <button class="btn-tb-edit" onclick="openProductModal('${p.id}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                ویرایش
+                            </button>
+                            <button class="btn-tb-delete" onclick="deleteProduct('${p.id}')">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                حذف
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProductModal(productId = null) {
+            const modal = document.getElementById('productModal');
+            const title = document.getElementById('productModalTitle');
+            
+            if (productId) {
+                const p = products.find(x => x.id === productId);
+                if (p) {
+                    title.innerText = 'ویرایش کالا / خدمت';
+                    document.getElementById('pmId').value = p.id;
+                    document.getElementById('pmCode').value = p.code;
+                    document.getElementById('pmName').value = p.name;
+                    document.getElementById('pmUnit').value = p.unit;
+                    document.getElementById('pmStock').value = p.stock;
+                    document.getElementById('pmBuyPrice').value = p.buyPrice;
+                    document.getElementById('pmSellPrice').value = p.sellPrice;
+                }
+            } else {
+                title.innerText = 'تعریف کالا / خدمت جدید';
+                document.getElementById('pmId').value = '';
+                document.getElementById('pmCode').value = 'PRD-' + (products.length + 101);
+                document.getElementById('pmName').value = '';
+                document.getElementById('pmUnit').value = 'عدد';
+                document.getElementById('pmStock').value = '100';
+                document.getElementById('pmBuyPrice').value = '0';
+                document.getElementById('pmSellPrice').value = '0';
+            }
+            modal.classList.add('active');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function saveProduct() {
+            const id = document.getElementById('pmId').value;
+            const code = document.getElementById('pmCode').value.trim();
+            const name = document.getElementById('pmName').value.trim();
+            const unit = document.getElementById('pmUnit').value.trim() || 'عدد';
+            const stock = Number(document.getElementById('pmStock').value) || 0;
+            const buyPrice = Number(document.getElementById('pmBuyPrice').value) || 0;
+            const sellPrice = Number(document.getElementById('pmSellPrice').value) || 0;
+
+            if (!name) {
+                showToast('نام کالا الزامی است');
+                return;
+            }
+
+            if (id) {
+                const idx = products.findIndex(p => p.id === id);
+                if (idx >= 0) {
+                    products[idx] = { id, code, name, unit, stock, buyPrice, sellPrice };
+                    showToast('اطلاعات کالا بروزرسانی شد');
+                }
+            } else {
+                const newP = {
+                    id: Date.now().toString(),
+                    code: code || ('PRD-' + (products.length + 101)),
+                    name, unit, stock, buyPrice, sellPrice
+                };
+                products.push(newP);
+                showToast('کالای جدید اضافه شد');
+            }
+
+            saveToStorage();
+            renderInventoryTable();
+            closeProductModal();
+        }
+
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            saveToStorage();
+            renderInventoryTable();
+            showToast('کالا با موفقیت حذف شد');
+        }
+
+        function renderAnalytics() {
+            let totalSales = 0;
+            let totalItemsSold = 0;
+            const productSalesMap = {};
+            const dateSalesMap = {};
+
+            invoices.forEach(inv => {
+                totalSales += inv.grandTotal;
+                if (dateSalesMap[inv.date]) {
+                    dateSalesMap[inv.date] += inv.grandTotal;
+                } else {
+                    dateSalesMap[inv.date] = inv.grandTotal;
+                }
+
+                if (inv.items) {
+                    inv.items.forEach(it => {
+                        totalItemsSold += it.qty;
+                        if (productSalesMap[it.name]) {
+                            productSalesMap[it.name] += it.qty;
+                        } else {
+                            productSalesMap[it.name] = it.qty;
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('kpiTotalSales').innerText = formatMoney(totalSales) + ' تومان';
+            document.getElementById('kpiTotalInvoices').innerText = toPersianDigits(invoices.length);
+            document.getElementById('kpiTotalItemsSold').innerText = toPersianDigits(totalItemsSold);
+            const avg = invoices.length > 0 ? Math.round(totalSales / invoices.length) : 0;
+            document.getElementById('kpiAvgInvoice').innerText = formatMoney(avg) + ' تومان';
+
+            // Chart 1: Sales trend
+            const salesCanvas = document.getElementById('salesChart');
+            if (salesCanvas) {
+                const dates = Object.keys(dateSalesMap).sort();
+                const salesData = dates.map(d => dateSalesMap[d]);
+
+                if (salesChartObj) salesChartObj.destroy();
+                salesChartObj = new Chart(salesCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: dates.length > 0 ? dates : ['بدون داده'],
+                        datasets: [{
+                            label: 'فروش (تومان)',
+                            data: dates.length > 0 ? salesData : [0],
+                            borderColor: '#3156A6',
+                            backgroundColor: 'rgba(49, 86, 166, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // Chart 2: Top Products
+            const topProductsCanvas = document.getElementById('topProductsChart');
+            if (topProductsCanvas) {
+                const prodNames = Object.keys(productSalesMap);
+                const prodQtys = prodNames.map(n => productSalesMap[n]);
+
+                if (topProductsChartObj) topProductsChartObj.destroy();
+                topProductsChartObj = new Chart(topProductsCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: prodNames.length > 0 ? prodNames : ['بدون داده'],
+                        datasets: [{
+                            label: 'تعداد فروخته شده',
+                            data: prodNames.length > 0 ? prodQtys : [0],
+                            backgroundColor: '#7C5CFF'
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        function openExcelModal() {
+            document.getElementById('excelModal').classList.add('active');
+        }
+
+        function closeExcelModal() {
+            document.getElementById('excelModal').classList.remove('active');
+        }
+
+        function filterInvoicesByShamsiDate(yearSelectId, monthSelectId) {
+            const yr = document.getElementById(yearSelectId).value;
+            const mo = document.getElementById(monthSelectId).value;
+            const prefix = `${yr}/${mo}`;
+            
+            return invoices.filter(inv => {
+                const engDate = toEnglishDigits(inv.date);
+                return engDate.startsWith(prefix);
+            });
+        }
+
+        function exportMonthlyInvoices(yearSelectId, monthSelectId) {
+            const yr = document.getElementById(yearSelectId).value;
+            const mo = document.getElementById(monthSelectId).value;
+            const list = filterInvoicesByShamsiDate(yearSelectId, monthSelectId);
+
+            if (list.length === 0) {
+                showToast(`هیچ فاکتوری برای ماه ${mo} سال ${yr} ثبت نشده است.`);
+                return;
+            }
+
+            const excelData = list.map((inv, idx) => ({
+                'ردیف': idx + 1,
+                'شماره فاکتور': inv.number,
+                'تاریخ صدور': inv.date,
+                'نام خریدار': inv.buyerName,
+                'تلفن خریدار': inv.buyerPhone,
+                'تعداد اقلام': inv.items.length,
+                'مبلغ تخفیف (تومان)': inv.discount,
+                'مالیات (تومان)': inv.taxAmount,
+                'مبلغ کل فاکتور (تومان)': inv.grandTotal
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'فاکتورها');
+            XLSX.writeFile(workbook, `گزارش_فاکتورها_${yr}_${mo}.xlsx`);
+            showToast('فایل اکسل با موفقیت دانلود شد');
+        }
+
+        function exportMonthlySoldItems(yearSelectId, monthSelectId) {
+            const yr = document.getElementById(yearSelectId).value;
+            const mo = document.getElementById(monthSelectId).value;
+            const list = filterInvoicesByShamsiDate(yearSelectId, monthSelectId);
+
+            if (list.length === 0) {
+                showToast(`هیچ کالای فروخته‌شده‌ای برای ماه ${mo} سال ${yr} وجود ندارد.`);
+                return;
+            }
+
+            const groupedItems = {};
+
+            list.forEach(inv => {
+                if (inv.items) {
+                    inv.items.forEach(it => {
+                        const name = it.name;
+                        if (!groupedItems[name]) {
+                            groupedItems[name] = {
+                                name: name,
+                                invoices: new Set(),
+                                qty: 0,
+                                price: it.price
+                            };
+                        }
+                        groupedItems[name].invoices.add(inv.number);
+                        groupedItems[name].qty += Number(it.qty) || 0;
+                    });
+                }
+            });
+
+            const soldItems = Object.values(groupedItems).map((item, index) => ({
+                'ردیف': index + 1,
+                'نام کالا': item.name,
+                'فروش در فاکتورهای با شماره زیر': Array.from(item.invoices).join(', '),
+                'تعداد': item.qty,
+                'قیمت': item.price
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(soldItems);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'کالاهای فروخته شده');
+            XLSX.writeFile(workbook, `کالاهای_فروخته_شده_${yr}_${mo}.xlsx`);
+            showToast('فایل اکسل اقلام با موفقیت دانلود شد');
+        }
+
+        function saveSettings() {
+            settings.sellerName = document.getElementById('settingSellerName').value;
+            settings.sellerCode = document.getElementById('settingSellerCode').value;
+            settings.sellerPhone = document.getElementById('settingSellerPhone').value;
+            settings.sellerAddress = document.getElementById('settingSellerAddress').value;
+
+            saveToStorage();
+            renderInvoice();
+            showToast('تنظیمات فروشگاه با موفقیت ذخیره شد');
+        }
+
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                settings.logoUrl = evt.target.result;
+                saveToStorage();
+                renderInvoice();
+                showToast('تصویر لوگو با موفقیت بارگذاری شد');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
