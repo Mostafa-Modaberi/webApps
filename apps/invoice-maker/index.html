@@ -614,12 +614,23 @@
         .preview-panel.hidden { display: none !important; }
         .editor-panel.expanded { width: 100%; max-width: none; }
 
+        /* کانتینر حفظ نسبت دقیق A4 / A5 در تمام نمایشگرها */
+        .preview-scale-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: hidden;
+        }
+
         .invoice-paper {
             width: 210mm; min-height: 297mm; aspect-ratio: 210 / 297;
             background: var(--surface); padding: 16mm 18mm; box-shadow: var(--shadow);
             border-radius: var(--radius); border: 1px solid var(--border);
             position: relative; box-sizing: border-box; display: flex;
             flex-direction: column; justify-content: space-between;
+            flex-shrink: 0;
+            transform-origin: top center;
         }
 
         .inv-header {
@@ -655,15 +666,8 @@
         .info-line span:first-child { width: 85px; color: var(--muted); flex-shrink: 0; }
         .info-line span:last-child { font-weight: 600; color: var(--text); flex: 1; word-break: break-word; }
 
-        .inv-table-wrap {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-bottom: 20px;
-        }
-
         .inv-table {
-            width: 100%; border-collapse: separate; border-spacing: 0;
+            width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px;
             border: 1px solid var(--border-dark); border-radius: var(--radius-sm); overflow: hidden;
         }
         .inv-table th, .inv-table td {
@@ -823,7 +827,7 @@
         }
         .toast-notification.show { transform: translateY(0); opacity: 1; }
 
-        /* ================== ریسپانسیو تبلت و موبایل ================== */
+        /* ================== ریسپانسیو تبلت و موبایل (بدون تغییر قالب A4/A5 پیش‌نمایش) ================== */
         @media (max-width: 992px) {
             .app-header {
                 flex-wrap: wrap;
@@ -871,7 +875,7 @@
                 display: none !important;
             }
             .preview-panel {
-                padding: 14px 12px 86px 12px;
+                padding: 14px 10px 86px 10px;
                 overflow: visible;
                 width: 100%;
             }
@@ -887,24 +891,6 @@
                 font-size: 12.5px;
             }
 
-            .invoice-paper {
-                width: 100%;
-                max-width: 210mm;
-                aspect-ratio: auto;
-                min-height: auto;
-                padding: 20px 16px;
-            }
-            .invoice-paper.theme-corporate {
-                padding: 20px 16px;
-            }
-            .invoice-paper.with-page-border::before {
-                top: 6px;
-                bottom: 6px;
-                left: 6px;
-                right: 6px;
-            }
-
-            .inv-bottom-section { grid-template-columns: 1fr; gap: 14px; }
             .charts-grid { grid-template-columns: 1fr; }
             .full-page-view { padding: 14px; gap: 16px; }
             .excel-export-grid { grid-template-columns: 1fr 1fr; }
@@ -929,53 +915,6 @@
                 height: 42px;
             }
             .page-title h2 { font-size: 16px; }
-
-            .inv-header {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-                gap: 10px;
-            }
-            .inv-title {
-                text-align: center;
-                padding: 0;
-            }
-            .inv-title h1 { font-size: 18px; }
-            .invoice-paper.theme-iranian-classic .inv-title h1 { font-size: 21px !important; }
-            .inv-meta {
-                text-align: right;
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                gap: 6px 14px;
-                font-size: 12px;
-            }
-            .inv-info-boxes {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            .inv-table {
-                min-width: 460px;
-            }
-            .inv-table th, .inv-table td {
-                padding: 7px 6px;
-                font-size: 11.5px;
-            }
-            .invoice-paper.theme-iranian-classic .inv-table th,
-            .invoice-paper.theme-iranian-classic .inv-table td,
-            .invoice-paper.theme-iranian-classic .info-line,
-            .invoice-paper.theme-iranian-classic .inv-meta,
-            .invoice-paper.theme-iranian-classic .inv-words,
-            .invoice-paper.theme-iranian-classic .inv-notes,
-            .invoice-paper.theme-iranian-classic .summary-line {
-                font-size: 13.5px !important;
-            }
-            .inv-signatures {
-                padding: 0 12px;
-                margin-top: 20px;
-            }
-            .signature { width: 45%; font-size: 12px; }
-            .signature-line { margin-top: 38px; }
 
             .about-card { padding: 18px 16px; }
             .about-header-title h2 { font-size: 17px; }
@@ -1078,22 +1017,17 @@
                 display: block !important;
                 overflow: visible !important;
             }
+            .preview-scale-wrapper {
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+            }
             .invoice-paper {
                 width: 210mm !important; height: 297mm !important; aspect-ratio: 210 / 297 !important;
                 padding: 12mm 15mm !important; box-shadow: none !important; border: none !important;
                 border-radius: 0 !important; margin: 0 auto !important; page-break-after: always;
+                transform: none !important;
             }
-            .invoice-paper.with-page-border::before {
-                top: 7mm !important; bottom: 7mm !important; left: 7mm !important; right: 7mm !important;
-            }
-            .inv-header { flex-direction: row !important; text-align: right !important; }
-            .inv-title { text-align: right !important; }
-            .inv-meta { text-align: left !important; display: block !important; }
-            .inv-info-boxes { grid-template-columns: 1fr 1fr !important; }
-            .inv-table-wrap { overflow: visible !important; }
-            .inv-table { min-width: 0 !important; }
-            .inv-bottom-section { grid-template-columns: 1fr 280px !important; }
-            .inv-signatures { padding: 0 40px !important; }
         }
     </style>
 </head>
@@ -1286,41 +1220,41 @@
 
                     </div>
 
-                    <!-- پیش نمایش A4 -->
+                    <!-- پیش نمایش A4 / A5 -->
                     <div class="preview-panel" id="previewPanel">
-                        <div class="invoice-paper theme-iranian-classic with-page-border" id="invoicePaper">
-                            <div>
-                                <div class="inv-header">
-                                    <div class="inv-title">
-                                        <h1 id="pvInvTitle">فاکتور فروش کالا و خدمات</h1>
-                                        <h2 id="pvSellerNameHeader">مصطفی مدبری</h2>
+                        <div class="preview-scale-wrapper" id="previewScaleWrapper">
+                            <div class="invoice-paper theme-iranian-classic with-page-border" id="invoicePaper">
+                                <div>
+                                    <div class="inv-header">
+                                        <div class="inv-title">
+                                            <h1 id="pvInvTitle">فاکتور فروش کالا و خدمات</h1>
+                                            <h2 id="pvSellerNameHeader">مصطفی مدبری</h2>
+                                        </div>
+                                        <div class="inv-logo" id="invLogoContainer" style="display:none;"></div>
+                                        <div class="inv-meta">
+                                            <div>شماره: <strong id="pvInvNumber">INV-1001</strong></div>
+                                            <div>تاریخ: <strong id="pvInvDate">-</strong></div>
+                                            <div>سررسید: <strong id="pvInvDueDate">نقدی</strong></div>
+                                        </div>
                                     </div>
-                                    <div class="inv-logo" id="invLogoContainer" style="display:none;"></div>
-                                    <div class="inv-meta">
-                                        <div>شماره: <strong id="pvInvNumber">INV-1001</strong></div>
-                                        <div>تاریخ: <strong id="pvInvDate">-</strong></div>
-                                        <div>سررسید: <strong id="pvInvDueDate">نقدی</strong></div>
-                                    </div>
-                                </div>
 
-                                <div class="inv-info-boxes">
-                                    <div class="info-box">
-                                        <div class="info-box-title">مشخصات فروشنده</div>
-                                        <div class="info-line"><span>نام / شرکت:</span><span id="pvSellerName">مصطفی مدبری</span></div>
-                                        <div class="info-line"><span>شناسه ملی:</span><span id="pvSellerCode">14001234567</span></div>
-                                        <div class="info-line"><span>تلفن:</span><span id="pvSellerPhone">051-55220000</span></div>
-                                        <div class="info-line"><span>نشانی:</span><span id="pvSellerAddress">خراسان رضوی، کاشمر</span></div>
+                                    <div class="inv-info-boxes">
+                                        <div class="info-box">
+                                            <div class="info-box-title">مشخصات فروشنده</div>
+                                            <div class="info-line"><span>نام / شرکت:</span><span id="pvSellerName">مصطفی مدبری</span></div>
+                                            <div class="info-line"><span>شناسه ملی:</span><span id="pvSellerCode">14001234567</span></div>
+                                            <div class="info-line"><span>تلفن:</span><span id="pvSellerPhone">051-55220000</span></div>
+                                            <div class="info-line"><span>نشانی:</span><span id="pvSellerAddress">خراسان رضوی، کاشمر</span></div>
+                                        </div>
+                                        <div class="info-box">
+                                            <div class="info-box-title">مشخصات خریدار</div>
+                                            <div class="info-line"><span>نام خریدار:</span><span id="pvBuyerName">جناب آقای محمدی</span></div>
+                                            <div class="info-line"><span>کد ملی/شناسه:</span><span id="pvBuyerCode">0012345678</span></div>
+                                            <div class="info-line"><span>تلفن:</span><span id="pvBuyerPhone">09123456789</span></div>
+                                            <div class="info-line"><span>نشانی:</span><span id="pvBuyerAddress">خراسان رضوی، کاشمر</span></div>
+                                        </div>
                                     </div>
-                                    <div class="info-box">
-                                        <div class="info-box-title">مشخصات خریدار</div>
-                                        <div class="info-line"><span>نام خریدار:</span><span id="pvBuyerName">جناب آقای محمدی</span></div>
-                                        <div class="info-line"><span>کد ملی/شناسه:</span><span id="pvBuyerCode">0012345678</span></div>
-                                        <div class="info-line"><span>تلفن:</span><span id="pvBuyerPhone">09123456789</span></div>
-                                        <div class="info-line"><span>نشانی:</span><span id="pvBuyerAddress">خراسان رضوی، کاشمر</span></div>
-                                    </div>
-                                </div>
 
-                                <div class="inv-table-wrap">
                                     <table class="inv-table">
                                         <thead>
                                             <tr>
@@ -1334,32 +1268,32 @@
                                         <tbody id="pvItemsTableBody"></tbody>
                                     </table>
                                 </div>
-                            </div>
 
-                            <div>
-                                <div class="inv-bottom-section">
-                                    <div class="inv-notes-wrapper">
-                                        <div class="inv-words">
-                                            مبلغ به حروف: <strong id="pvAmountInWords">صفر تومان</strong>
+                                <div>
+                                    <div class="inv-bottom-section">
+                                        <div class="inv-notes-wrapper">
+                                            <div class="inv-words">
+                                                مبلغ به حروف: <strong id="pvAmountInWords">صفر تومان</strong>
+                                            </div>
+                                            <div class="inv-notes" id="pvNotes">توضیحات فاکتور...</div>
                                         </div>
-                                        <div class="inv-notes" id="pvNotes">توضیحات فاکتور...</div>
+                                        <div class="summary-box">
+                                            <div class="summary-line"><span>جمع اقلام:</span><span id="pvSubtotal">۰</span></div>
+                                            <div class="summary-line"><span>تخفیف:</span><span id="pvDiscount">۰</span></div>
+                                            <div class="summary-line"><span>مالیات بر ارزش افزوده:</span><span id="pvTax">۰</span></div>
+                                            <div class="summary-line"><span>مبلغ قابل پرداخت:</span><span id="pvGrandTotal">۰ تومان</span></div>
+                                        </div>
                                     </div>
-                                    <div class="summary-box">
-                                        <div class="summary-line"><span>جمع اقلام:</span><span id="pvSubtotal">۰</span></div>
-                                        <div class="summary-line"><span>تخفیف:</span><span id="pvDiscount">۰</span></div>
-                                        <div class="summary-line"><span>مالیات بر ارزش افزوده:</span><span id="pvTax">۰</span></div>
-                                        <div class="summary-line"><span>مبلغ قابل پرداخت:</span><span id="pvGrandTotal">۰ تومان</span></div>
-                                    </div>
-                                </div>
 
-                                <div class="inv-signatures">
-                                    <div class="signature">
-                                        <div>مهر و امضای فروشنده</div>
-                                        <div class="signature-line"></div>
-                                    </div>
-                                    <div class="signature">
-                                        <div>امضای خریدار</div>
-                                        <div class="signature-line"></div>
+                                    <div class="inv-signatures">
+                                        <div class="signature">
+                                            <div>مهر و امضای فروشنده</div>
+                                            <div class="signature-line"></div>
+                                        </div>
+                                        <div class="signature">
+                                            <div>امضای خریدار</div>
+                                            <div class="signature-line"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1788,7 +1722,38 @@
             syncResponsiveInvoiceMode();
         };
 
-        window.addEventListener('resize', syncResponsiveInvoiceMode);
+        window.addEventListener('resize', () => {
+            syncResponsiveInvoiceMode();
+            scaleInvoicePreview();
+        });
+
+        function scaleInvoicePreview() {
+            const panel = document.getElementById('previewPanel');
+            const wrapper = document.getElementById('previewScaleWrapper');
+            const paper = document.getElementById('invoicePaper');
+            if (!panel || !wrapper || !paper) return;
+
+            // اگر پنل مخفی است محاسبه نکن
+            if (panel.offsetParent === null) return;
+
+            paper.style.transform = '';
+            wrapper.style.height = 'auto';
+
+            const style = window.getComputedStyle(panel);
+            const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+            const availWidth = panel.clientWidth - padX;
+            const paperWidth = paper.offsetWidth;
+            const paperHeight = paper.offsetHeight;
+
+            if (availWidth > 0 && paperWidth > 0 && availWidth < paperWidth) {
+                const scale = availWidth / paperWidth;
+                paper.style.transform = `scale(${scale})`;
+                wrapper.style.height = Math.ceil(paperHeight * scale) + 12 + 'px';
+            } else {
+                paper.style.transform = '';
+                wrapper.style.height = 'auto';
+            }
+        }
 
         function syncResponsiveInvoiceMode() {
             const editor = document.getElementById('editorPanel');
@@ -1803,6 +1768,7 @@
                     preview.classList.remove('mobile-hidden');
                     btn.classList.add('active');
                     btnText.innerText = 'بازگشت به ویرایش';
+                    requestAnimationFrame(scaleInvoicePreview);
                 } else {
                     editor.classList.remove('mobile-hidden');
                     preview.classList.add('mobile-hidden');
@@ -1813,6 +1779,7 @@
                 btn.style.display = 'none';
                 editor.classList.remove('mobile-hidden');
                 preview.classList.remove('mobile-hidden');
+                requestAnimationFrame(scaleInvoicePreview);
             }
         }
 
@@ -1988,6 +1955,7 @@
             
             const isHidden = panel.classList.contains('hidden');
             document.getElementById('previewToggleText').innerText = isHidden ? 'نمایش پیش‌نمایش' : 'مخفی کردن پیش‌نمایش';
+            if (!isHidden) requestAnimationFrame(scaleInvoicePreview);
         }
 
         function addItemRow(itemData = null) {
@@ -2068,6 +2036,7 @@
             if (document.getElementById('pageBorderToggle').checked) {
                 paper.classList.add('with-page-border');
             }
+            requestAnimationFrame(scaleInvoicePreview);
         }
 
         function togglePageBorder() {
@@ -2149,6 +2118,8 @@
             
             document.getElementById('pvNotes').innerText = document.getElementById('invNotesInput').value || '-';
             document.getElementById('pvAmountInWords').innerText = numToPersianWords(grandTotal) + ' تومان';
+
+            requestAnimationFrame(scaleInvoicePreview);
         }
 
         function numToPersianWords(num) {
