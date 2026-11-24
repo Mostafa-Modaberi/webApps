@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>سامانه جامع فاکتورساز</title>
     
     <!-- فونت شبنم -->
@@ -64,12 +64,14 @@
             margin: 0;
             padding: 0;
             font-family: 'Shabnam', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Tahoma, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
             background-color: var(--bg);
             color: var(--text);
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             font-size: 13.5px;
             line-height: 1.5;
@@ -80,12 +82,13 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
-            width: 100vw;
+            height: 100dvh;
+            width: 100%;
             overflow: hidden;
         }
 
         .app-header {
-            height: 64px;
+            min-height: 64px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
@@ -93,12 +96,14 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 8px 20px;
+            gap: 12px;
             z-index: 100;
             box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
 
-        .header-left-side { display: flex; align-items: center; gap: 14px; }
+        .header-left-side { display: flex; align-items: center; gap: 14px; min-width: 0; }
 
         .hamburger-btn {
             background: var(--surface-2);
@@ -112,6 +117,7 @@
             justify-content: center;
             color: var(--text);
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
 
         .hamburger-btn:hover {
@@ -120,7 +126,7 @@
             border-color: var(--primary);
         }
 
-        .brand-container { display: flex; align-items: center; gap: 10px; }
+        .brand-container { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
         .brand-icon {
             width: 38px;
@@ -132,10 +138,12 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(124, 92, 255, 0.25);
+            flex-shrink: 0;
         }
 
-        .brand-text h1 { font-size: 15px; font-weight: 800; color: var(--text); }
-        .brand-text p { font-size: 11px; color: var(--muted); }
+        .brand-text { min-width: 0; }
+        .brand-text h1 { font-size: 15px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .brand-text p { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .header-date-badge {
             background: var(--surface-3);
@@ -148,9 +156,10 @@
             align-items: center;
             gap: 6px;
             border: 1px solid var(--border);
+            white-space: nowrap;
         }
 
-        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
         .action-buttons {
             display: flex !important;
@@ -162,7 +171,7 @@
         }
 
         .btn-tb-edit, .btn-tb-delete {
-            height: 32px;
+            height: 34px;
             padding: 0 10px;
             border-radius: var(--radius-sm);
             font-size: 11.5px;
@@ -218,6 +227,8 @@
             justify-content: space-between;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             padding-bottom: 12px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
         .excel-export-title {
@@ -245,7 +256,7 @@
 
         .excel-export-grid select {
             width: 100%;
-            height: 40px;
+            height: 42px;
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid #ffffff;
             border-radius: var(--radius-sm);
@@ -259,7 +270,7 @@
             background: #ffffff;
             color: #107C41;
             font-weight: 800;
-            height: 40px;
+            height: 42px;
             border-radius: var(--radius-sm);
             border: none;
             cursor: pointer;
@@ -269,6 +280,7 @@
             gap: 8px;
             transition: all 0.2s ease;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            padding: 0 12px;
         }
 
         .btn-excel:hover {
@@ -437,15 +449,16 @@
         .drawer-overlay.active { opacity: 1; pointer-events: auto; }
 
         .nav-drawer {
-            position: fixed; top: 0; right: 0; bottom: 0; width: 290px;
+            position: fixed; top: 0; right: 0; bottom: 0; width: 290px; max-width: 85vw;
             background: var(--surface); z-index: 201; transform: translateX(100%);
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             display: flex; flex-direction: column; box-shadow: -8px 0 30px rgba(0, 0, 0, 0.12);
+            overflow-y: auto;
         }
         .nav-drawer.active { transform: translateX(0); }
 
         .drawer-header {
-            padding: 20px; border-bottom: 1px solid var(--border);
+            padding: 18px 20px; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between;
             background: var(--surface-2);
         }
@@ -453,18 +466,19 @@
         
         .drawer-close {
             background: transparent; border: none; cursor: pointer; color: var(--muted);
-            width: 32px; height: 32px; border-radius: var(--radius-sm);
-            display: flex; align-items: center; justify-content: center;
+            width: 36px; height: 36px; border-radius: var(--radius-sm);
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
         }
         .drawer-close:hover { background: var(--surface-3); color: var(--text); }
 
         .drawer-menu { padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; }
 
         .drawer-item {
-            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            display: flex; align-items: center; gap: 12px; padding: 13px 14px;
             border-radius: var(--radius-sm); color: var(--text-secondary);
             font-weight: 700; font-size: 13.5px; cursor: pointer;
             transition: all 0.2s ease; text-decoration: none; border: 1px solid transparent;
+            min-height: 46px;
         }
         .drawer-item:hover { background: var(--surface-2); color: var(--primary); }
         .drawer-item.active {
@@ -473,26 +487,27 @@
         }
 
         .preview-toggle-btn {
-            position: fixed; bottom: 24px; right: 24px; z-index: 150;
-            background: var(--accent); color: white; border: none;
-            border-radius: 50px; padding: 12px 20px;
-            box-shadow: 0 4px 15px rgba(124, 92, 255, 0.4); cursor: pointer;
-            display: flex; align-items: center; gap: 8px; font-weight: 700;
-            font-size: 13.5px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: fixed; bottom: 20px; right: 20px; z-index: 150;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white; border: none;
+            border-radius: 50px; padding: 12px 18px;
+            box-shadow: 0 6px 20px rgba(49, 86, 166, 0.35); cursor: pointer;
+            display: none; align-items: center; gap: 8px; font-weight: 700;
+            font-size: 13px; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .preview-toggle-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(124, 92, 255, 0.5); }
-        .preview-toggle-btn.active { background: var(--surface); color: var(--accent); border: 2px solid var(--accent); }
+        .preview-toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(124, 92, 255, 0.45); }
+        .preview-toggle-btn.active { background: var(--surface); color: var(--primary); border: 2px solid var(--primary); }
 
-        .views-container { flex: 1; height: calc(100vh - 64px); overflow: hidden; position: relative; }
-        .view-page { display: none; height: 100%; width: 100%; overflow-y: auto; }
+        .views-container { flex: 1; min-height: 0; overflow: hidden; position: relative; display: flex; }
+        .view-page { display: none; height: 100%; width: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         .view-page.active { display: flex; flex-direction: column; }
 
         .main-content-layout { display: flex; width: 100%; height: 100%; overflow: hidden; }
 
         .editor-panel {
             width: 580px; min-width: 400px; max-width: 650px; background: var(--surface);
-            border-left: 1px solid var(--border); overflow-y: auto; display: flex;
-            flex-direction: column; padding: 20px; gap: 16px; z-index: 10;
+            border-left: 1px solid var(--border); overflow-y: auto; -webkit-overflow-scrolling: touch;
+            display: flex; flex-direction: column; padding: 20px; gap: 16px; z-index: 10;
         }
 
         .section-box {
@@ -502,6 +517,7 @@
         .section-header {
             display: flex; align-items: center; justify-content: space-between;
             margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--surface-3);
+            gap: 8px; flex-wrap: wrap;
         }
         .section-title {
             font-size: 13.5px; font-weight: 700; color: var(--primary);
@@ -565,7 +581,7 @@
             background: rgba(209, 67, 67, 0.08); border: 1px solid rgba(209, 67, 67, 0.2);
             color: var(--danger); width: 36px; height: 36px; border-radius: var(--radius-sm);
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease; flex-shrink: 0;
+            transition: all 0.2s ease; flex-shrink: 0; font-size: 18px;
         }
         .btn-danger-icon:hover { background: var(--danger); color: white; }
         .btn-block { width: 100%; }
@@ -583,13 +599,14 @@
             box-shadow: var(--shadow); z-index: 50; max-height: 180px; overflow-y: auto; display: none;
         }
         .product-dropdown-item {
-            padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between;
-            font-size: 12px; border-bottom: 1px solid var(--surface-3);
+            padding: 10px 12px; cursor: pointer; display: flex; justify-content: space-between;
+            gap: 8px; font-size: 12px; border-bottom: 1px solid var(--surface-3);
         }
         .product-dropdown-item:hover { background: var(--primary-light); color: var(--primary); }
 
         .preview-panel {
-            flex: 1; overflow-y: auto; padding: 32px; display: flex;
+            flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 32px; display: flex;
             justify-content: center; align-items: flex-start; background: var(--bg);
             transition: all 0.3s ease; opacity: 1; visibility: visible; transform: translateX(0);
         }
@@ -608,6 +625,7 @@
         .inv-header {
             display: flex; justify-content: space-between; align-items: flex-start;
             padding-bottom: 16px; border-bottom: 2px solid var(--primary); margin-bottom: 20px; position: relative;
+            gap: 10px;
         }
         .inv-header::after {
             content: ''; position: absolute; bottom: -5px; left: 0; right: 0;
@@ -637,8 +655,15 @@
         .info-line span:first-child { width: 85px; color: var(--muted); flex-shrink: 0; }
         .info-line span:last-child { font-weight: 600; color: var(--text); flex: 1; word-break: break-word; }
 
+        .inv-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
         .inv-table {
-            width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px;
+            width: 100%; border-collapse: separate; border-spacing: 0;
             border: 1px solid var(--border-dark); border-radius: var(--radius-sm); overflow: hidden;
         }
         .inv-table th, .inv-table td {
@@ -664,7 +689,7 @@
 
         .summary-box { border: 1px solid var(--border-dark); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
         .summary-line {
-            display: flex; justify-content: space-between; padding: 8px 12px;
+            display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px;
             border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--text-secondary);
         }
         .summary-line:last-child {
@@ -672,7 +697,7 @@
             color: var(--primary-dark); font-weight: 800; font-size: 14px;
         }
 
-        .inv-signatures { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 30px; }
+        .inv-signatures { display: flex; justify-content: space-between; padding: 0 40px; margin-top: 30px; gap: 20px; }
         .signature { text-align: center; width: 160px; }
         .signature-line {
             border-top: 1px dashed var(--border-dark); margin-top: 50px;
@@ -681,7 +706,7 @@
 
         .full-page-view { padding: 30px; width: 100%; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
         .page-header-box {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between; align-items: center; gap: 14px;
             background: var(--surface); padding: 20px 24px; border-radius: var(--radius);
             border: 1px solid var(--border); box-shadow: var(--shadow-sm);
         }
@@ -691,17 +716,23 @@
         .data-table-container {
             background: var(--surface); border-radius: var(--radius);
             border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .table-scroll-wrap {
+            width: 100%;
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .table-toolbar {
             padding: 16px; border-bottom: 1px solid var(--border);
             display: flex; gap: 12px; background: var(--surface-2); align-items: center; justify-content: space-between;
+            flex-wrap: wrap;
         }
         .custom-table { width: 100%; border-collapse: collapse; min-width: 600px; }
         .custom-table th, .custom-table td {
             padding: 14px 16px; text-align: right; border-bottom: 1px solid var(--border); font-size: 13px;
         }
-        .custom-table th { background: var(--surface-3); color: var(--text-secondary); font-weight: 700; }
+        .custom-table th { background: var(--surface-3); color: var(--text-secondary); font-weight: 700; white-space: nowrap; }
         .custom-table tr:last-child td { border-bottom: none; }
 
         .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
@@ -711,7 +742,7 @@
             display: flex; flex-direction: column; gap: 8px;
         }
         .kpi-title { font-size: 12.5px; color: var(--muted); font-weight: 600; }
-        .kpi-value { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .kpi-value { font-size: 20px; font-weight: 800; color: var(--primary); word-break: break-word; }
 
         .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .chart-card {
@@ -772,54 +803,297 @@
         .instagram-badge:hover { transform: scale(1.04); }
 
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
             backdrop-filter: blur(4px); z-index: 300; display: none;
-            align-items: center; justify-content: center;
+            align-items: center; justify-content: center; padding: 16px;
         }
         .modal-overlay.active { display: flex; }
         .modal-box {
             background: var(--surface); border-radius: var(--radius); width: 460px;
             padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border);
-            max-width: 90vw;
+            max-width: 100%; max-height: 90dvh; overflow-y: auto; -webkit-overflow-scrolling: touch;
         }
         
         .toast-notification {
             position: fixed; bottom: 24px; left: 24px; background: var(--text);
             color: white; padding: 12px 20px; border-radius: var(--radius-sm);
             font-weight: 600; font-size: 13px; box-shadow: var(--shadow); z-index: 999;
-            transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(120px); opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
         }
         .toast-notification.show { transform: translateY(0); opacity: 1; }
 
+        /* ================== ریسپانسیو تبلت و موبایل ================== */
         @media (max-width: 992px) {
-            .main-content-layout { flex-direction: column; height: auto; overflow: visible; }
-            .editor-panel { width: 100%; max-width: none; min-width: 0; border-left: none; border-bottom: 1px solid var(--border); }
-            .preview-panel { padding: 16px; overflow: visible; }
-            .preview-toggle-btn { bottom: 16px; right: 16px; }
-            .invoice-paper { width: 100%; max-width: 210mm; aspect-ratio: 210 / 297; min-height: auto; padding: 12mm; }
-            .inv-bottom-section { grid-template-columns: 1fr; }
+            .app-header {
+                flex-wrap: wrap;
+                padding: 10px 14px;
+                gap: 10px;
+            }
+            .header-left-side {
+                flex: 1;
+                gap: 10px;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+                gap: 6px;
+            }
+            .header-date-badge {
+                width: 100%;
+                justify-content: center;
+                padding: 5px 10px;
+                font-size: 11.5px;
+            }
+            .header-actions .btn {
+                flex: 1;
+                padding: 0 10px;
+                font-size: 12px;
+                height: 38px;
+            }
+
+            .main-content-layout {
+                flex-direction: column;
+                height: auto;
+                min-height: 100%;
+                overflow: visible;
+            }
+            .editor-panel {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+                border-left: none;
+                border-bottom: none;
+                padding: 14px 14px 86px 14px;
+                overflow: visible;
+            }
+            .editor-panel.mobile-hidden {
+                display: none !important;
+            }
+            .preview-panel {
+                padding: 14px 12px 86px 12px;
+                overflow: visible;
+                width: 100%;
+            }
+            .preview-panel.mobile-hidden {
+                display: none !important;
+            }
+
+            .preview-toggle-btn {
+                display: flex;
+                bottom: 16px;
+                right: 16px;
+                padding: 11px 16px;
+                font-size: 12.5px;
+            }
+
+            .invoice-paper {
+                width: 100%;
+                max-width: 210mm;
+                aspect-ratio: auto;
+                min-height: auto;
+                padding: 20px 16px;
+            }
+            .invoice-paper.theme-corporate {
+                padding: 20px 16px;
+            }
+            .invoice-paper.with-page-border::before {
+                top: 6px;
+                bottom: 6px;
+                left: 6px;
+                right: 6px;
+            }
+
+            .inv-bottom-section { grid-template-columns: 1fr; gap: 14px; }
             .charts-grid { grid-template-columns: 1fr; }
-            .full-page-view { padding: 15px; }
+            .full-page-view { padding: 14px; gap: 16px; }
             .excel-export-grid { grid-template-columns: 1fr 1fr; }
             .about-contact-box { flex-direction: column; align-items: flex-start; }
+
+            .toast-notification {
+                left: 14px;
+                right: 14px;
+                bottom: 72px;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header-box {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+            }
+            .page-header-box .btn {
+                width: 100%;
+                height: 42px;
+            }
+            .page-title h2 { font-size: 16px; }
+
+            .inv-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+                gap: 10px;
+            }
+            .inv-title {
+                text-align: center;
+                padding: 0;
+            }
+            .inv-title h1 { font-size: 18px; }
+            .invoice-paper.theme-iranian-classic .inv-title h1 { font-size: 21px !important; }
+            .inv-meta {
+                text-align: right;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 6px 14px;
+                font-size: 12px;
+            }
+            .inv-info-boxes {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .inv-table {
+                min-width: 460px;
+            }
+            .inv-table th, .inv-table td {
+                padding: 7px 6px;
+                font-size: 11.5px;
+            }
+            .invoice-paper.theme-iranian-classic .inv-table th,
+            .invoice-paper.theme-iranian-classic .inv-table td,
+            .invoice-paper.theme-iranian-classic .info-line,
+            .invoice-paper.theme-iranian-classic .inv-meta,
+            .invoice-paper.theme-iranian-classic .inv-words,
+            .invoice-paper.theme-iranian-classic .inv-notes,
+            .invoice-paper.theme-iranian-classic .summary-line {
+                font-size: 13.5px !important;
+            }
+            .inv-signatures {
+                padding: 0 12px;
+                margin-top: 20px;
+            }
+            .signature { width: 45%; font-size: 12px; }
+            .signature-line { margin-top: 38px; }
+
+            .about-card { padding: 18px 16px; }
+            .about-header-title h2 { font-size: 17px; }
+            .about-commitment { padding: 14px 16px; font-size: 13px; }
+        }
+
+        @media (max-width: 600px) {
+            .brand-icon { width: 34px; height: 34px; }
+            .brand-text h1 { font-size: 14px; }
+            .brand-text p { font-size: 10.5px; }
+
+            .grid-2 { grid-template-columns: 1fr; gap: 12px; }
+
+            .form-control {
+                height: 42px;
+                font-size: 14px;
+            }
+
+            .section-box { padding: 14px; }
+
+            /* چیدمان کارتی هر ردیف کالا در موبایل */
+            .item-editor-row {
+                grid-template-columns: 0.75fr 1.25fr 1fr auto;
+                gap: 8px;
+                padding: 10px;
+            }
+            .item-editor-row > div:first-child {
+                grid-column: 1 / -1;
+            }
+            .item-editor-row .form-control {
+                height: 40px;
+                font-size: 13px;
+            }
+            .item-editor-row .btn-danger-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .excel-export-card { padding: 16px; }
+            .excel-export-title { font-size: 14.5px; }
+            .excel-export-grid { grid-template-columns: 1fr; gap: 10px; }
+            .excel-export-grid > div:nth-child(3) label,
+            .excel-export-grid > div:nth-child(4) label {
+                display: none;
+            }
+
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
+            }
+            .table-toolbar .form-control {
+                max-width: 100% !important;
+            }
+            .custom-table th, .custom-table td {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .kpi-card { padding: 14px; }
+            .kpi-title { font-size: 11.5px; }
+            .kpi-value { font-size: 15px; }
+
+            .chart-card { padding: 14px; min-height: 260px; }
+            .canvas-container { height: 210px; }
+
+            .modal-box { padding: 18px 16px; }
+
+            #supportCardNumber {
+                font-size: 15px !important;
+                letter-spacing: 1px !important;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .kpi-grid { grid-template-columns: 1fr; }
+            .header-actions .btn { font-size: 11px; padding: 0 6px; }
         }
 
         @media print {
             @page { size: A4 portrait; margin: 0; }
-            body { background: white !important; color: black !important; }
+            html, body { background: white !important; color: black !important; height: auto !important; overflow: visible !important; }
             
+            .app-container { height: auto !important; overflow: visible !important; }
             .app-header, .editor-panel, .drawer-overlay, .nav-drawer, .toast-notification, .preview-toggle-btn { display: none !important; }
             .main-content-layout, .views-container, .view-page { display: block !important; height: auto !important; overflow: visible !important; }
             
             #view-inventory, #view-analytics, #view-history, #view-about, #view-settings { display: none !important; }
             #view-invoice { display: block !important; }
 
-            .preview-panel { padding: 0 !important; background: white !important; display: block !important; overflow: visible !important; }
+            .preview-panel,
+            .preview-panel.hidden,
+            .preview-panel.mobile-hidden {
+                padding: 0 !important;
+                background: white !important;
+                display: block !important;
+                overflow: visible !important;
+            }
             .invoice-paper {
                 width: 210mm !important; height: 297mm !important; aspect-ratio: 210 / 297 !important;
                 padding: 12mm 15mm !important; box-shadow: none !important; border: none !important;
                 border-radius: 0 !important; margin: 0 auto !important; page-break-after: always;
             }
+            .invoice-paper.with-page-border::before {
+                top: 7mm !important; bottom: 7mm !important; left: 7mm !important; right: 7mm !important;
+            }
+            .inv-header { flex-direction: row !important; text-align: right !important; }
+            .inv-title { text-align: right !important; }
+            .inv-meta { text-align: left !important; display: block !important; }
+            .inv-info-boxes { grid-template-columns: 1fr 1fr !important; }
+            .inv-table-wrap { overflow: visible !important; }
+            .inv-table { min-width: 0 !important; }
+            .inv-bottom-section { grid-template-columns: 1fr 280px !important; }
+            .inv-signatures { padding: 0 40px !important; }
         }
     </style>
 </head>
@@ -866,39 +1140,39 @@
                 </button>
             </div>
             <nav class="drawer-menu">
-                <a class="drawer-item active" onclick="switchView('invoice')">
+                <a class="drawer-item active" data-view="invoice" onclick="switchView('invoice')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                     صدور فاکتور جدید
                 </a>
-                <a class="drawer-item" onclick="switchView('history')">
+                <a class="drawer-item" data-view="history" onclick="switchView('history')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                     تاریخچه فاکتورها و گزارشات 
                 </a>
-                <a class="drawer-item" onclick="switchView('inventory')">
+                <a class="drawer-item" data-view="inventory" onclick="switchView('inventory')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                     مدیریـت انبـار و کالاها
                 </a>
-                <a class="drawer-item" onclick="switchView('analytics')">
+                <a class="drawer-item" data-view="analytics" onclick="switchView('analytics')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                     داشبـــورد و تحلیل مالی
                 </a>
-                <a class="drawer-item" onclick="switchView('settings')">
+                <a class="drawer-item" data-view="settings" onclick="switchView('settings')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                     اطلاعات فروشگاه و تنظیمات
                 </a>
-                <a class="drawer-item" onclick="switchView('about')">
+                <a class="drawer-item" data-view="about" onclick="switchView('about')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     درباره ما و راهنما
                 </a>
             </nav>
         </aside>
 
-        <button class="preview-toggle-btn active" id="previewToggleBtn" onclick="togglePreview()" style="display: none;">
+        <button class="preview-toggle-btn" id="previewToggleBtn" onclick="togglePreview()">
             <svg id="previewToggleIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
             </svg>
-            <span id="previewToggleText">مخفی کردن پیش‌نمایش</span>
+            <span id="previewToggleText">نمایش پیش‌نمایش</span>
         </button>
 
         <main class="views-container">
@@ -984,7 +1258,7 @@
                         <div class="section-box">
                             <div class="section-header">
                                 <span class="section-title">اقلام و کالاها</span>
-                                <button class="btn btn-outline" style="height:30px; font-size:12px;" onclick="addItemRow()">+ افزودن سطر</button>
+                                <button class="btn btn-outline" style="height:34px; font-size:12px;" onclick="addItemRow()">+ افزودن سطر</button>
                             </div>
                             <div id="itemsContainer"></div>
                         </div>
@@ -1046,18 +1320,20 @@
                                     </div>
                                 </div>
 
-                                <table class="inv-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width:38px;">ردیف</th>
-                                            <th>شرح کالا یا خدمات</th>
-                                            <th style="width:60px;">تعداد</th>
-                                            <th style="width:110px;">قیمت واحد (تومان)</th>
-                                            <th style="width:120px;">مبلغ کل (تومان)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pvItemsTableBody"></tbody>
-                                </table>
+                                <div class="inv-table-wrap">
+                                    <table class="inv-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:38px;">ردیف</th>
+                                                <th>شرح کالا یا خدمات</th>
+                                                <th style="width:60px;">تعداد</th>
+                                                <th style="width:110px;">قیمت واحد (تومان)</th>
+                                                <th style="width:120px;">مبلغ کل (تومان)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pvItemsTableBody"></tbody>
+                                    </table>
+                                </div>
                             </div>
 
                             <div>
@@ -1164,19 +1440,21 @@
                             <input type="text" class="form-control" id="historySearchInput" placeholder="جستجو بر اساس شماره فاکتور یا نام خریدار..." oninput="renderHistoryTable()" style="max-width:320px;">
                             <span style="font-size:12px; color:var(--muted);" id="historyCountBadge">تعداد فاکتورها: ۰</span>
                         </div>
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>کد / شماره فاکتور</th>
-                                    <th>تاریخ صدور</th>
-                                    <th>خریدار</th>
-                                    <th>موارد فاکتور</th>
-                                    <th>مبلغ کل (تومان)</th>
-                                    <th style="width:160px; text-align:center;">عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody"></tbody>
-                        </table>
+                        <div class="table-scroll-wrap">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>کد / شماره فاکتور</th>
+                                        <th>تاریخ صدور</th>
+                                        <th>خریدار</th>
+                                        <th>موارد فاکتور</th>
+                                        <th>مبلغ کل (تومان)</th>
+                                        <th style="width:160px; text-align:center;">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
 
                 </div>
@@ -1197,20 +1475,22 @@
                         <div class="table-toolbar">
                             <input type="text" class="form-control" id="inventorySearch" placeholder="جستجوی کالا..." oninput="renderInventoryTable()" style="max-width:300px;">
                         </div>
-                        <table class="custom-table">
-                            <thead>
-                                <tr>
-                                    <th>کد کالا</th>
-                                    <th>نام کالا / خدمت</th>
-                                    <th>واحد سنجش</th>
-                                    <th>قیمت خرید (تومان)</th>
-                                    <th>قیمت فروش (تومان)</th>
-                                    <th>موجودی</th>
-                                    <th style="width:150px; text-align:center;">عملیات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="inventoryTableBody"></tbody>
-                        </table>
+                        <div class="table-scroll-wrap">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>کد کالا</th>
+                                        <th>نام کالا / خدمت</th>
+                                        <th>واحد سنجش</th>
+                                        <th>قیمت خرید (تومان)</th>
+                                        <th>قیمت فروش (تومان)</th>
+                                        <th>موجودی</th>
+                                        <th style="width:150px; text-align:center;">عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inventoryTableBody"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1351,7 +1631,7 @@
                                     <strong style="color:var(--text); font-size:14px; display:block;">حمایت مالی از طریق کارت بانکی سامان</strong>
                                     <span style="color:var(--text-secondary); font-size:12.5px;">به نام مصطفی مدبری</span>
                                 </div>
-                                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; width:100%; justify-content:space-between;">
                                     <div id="supportCardNumber" style="direction:ltr; text-align:left; font-size:18px; font-weight:800; letter-spacing:1.5px; color:var(--primary);">
                                         6219&nbsp;8614&nbsp;7928&nbsp;3995
                                     </div>
@@ -1411,10 +1691,10 @@
                 </div>
 
                 <div style="border-top:1px solid var(--border); padding-top:16px; display:flex; flex-direction:column; gap:10px;">
-                    <button class="btn btn-success" style="background:#107C41; height:44px;" onclick="exportMonthlyInvoices('modalExportYear', 'modalExportMonth')">
+                    <button class="btn btn-success" style="background:#107C41; height:44px; white-space:normal; text-align:center;" onclick="exportMonthlyInvoices('modalExportYear', 'modalExportMonth')">
                          اکسل فاکتورهای ماه (کد، تاریخ، موارد، مبلغ)
                     </button>
-                    <button class="btn btn-success" style="background:#136236; height:44px;" onclick="exportMonthlySoldItems('modalExportYear', 'modalExportMonth')">
+                    <button class="btn btn-success" style="background:#136236; height:44px; white-space:normal; text-align:center;" onclick="exportMonthlySoldItems('modalExportYear', 'modalExportMonth')">
                          اکسل کالاهای فروخته شده (ردیف، کالا، تعداد، مبلغ)
                     </button>
                 </div>
@@ -1483,6 +1763,8 @@
         let itemsCount = 0;
         let salesChartObj = null;
         let topProductsChartObj = null;
+        let currentView = 'invoice';
+        let mobilePreviewMode = false;
 
         // Initialize App
         window.onload = function() {
@@ -1502,7 +1784,37 @@
             
             document.querySelectorAll('#historyExportYear, #modalExportYear').forEach(s => s.value = currentShamsiYear);
             document.querySelectorAll('#historyExportMonth, #modalExportMonth').forEach(s => s.value = currentShamsiMonth);
+
+            syncResponsiveInvoiceMode();
         };
+
+        window.addEventListener('resize', syncResponsiveInvoiceMode);
+
+        function syncResponsiveInvoiceMode() {
+            const editor = document.getElementById('editorPanel');
+            const preview = document.getElementById('previewPanel');
+            const btn = document.getElementById('previewToggleBtn');
+            const btnText = document.getElementById('previewToggleText');
+
+            if (window.innerWidth <= 992) {
+                btn.style.display = currentView === 'invoice' ? 'flex' : 'none';
+                if (mobilePreviewMode) {
+                    editor.classList.add('mobile-hidden');
+                    preview.classList.remove('mobile-hidden');
+                    btn.classList.add('active');
+                    btnText.innerText = 'بازگشت به ویرایش';
+                } else {
+                    editor.classList.remove('mobile-hidden');
+                    preview.classList.add('mobile-hidden');
+                    btn.classList.remove('active');
+                    btnText.innerText = 'نمایش پیش‌نمایش';
+                }
+            } else {
+                btn.style.display = 'none';
+                editor.classList.remove('mobile-hidden');
+                preview.classList.remove('mobile-hidden');
+            }
+        }
 
         function initDate() {
             const todayStr = getTodayShamsiDate();
@@ -1626,11 +1938,17 @@
         }
 
         function switchView(viewName) {
+            currentView = viewName;
             document.querySelectorAll('.view-page').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.drawer-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.drawer-item').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-view') === viewName);
+            });
             
             const target = document.getElementById('view-' + viewName);
-            if (target) target.classList.add('active');
+            if (target) {
+                target.classList.add('active');
+                target.scrollTop = 0;
+            }
             
             const titles = {
                 'invoice': 'صفحه اصلی: صدور فاکتور',
@@ -1642,17 +1960,24 @@
             };
             document.getElementById('header-subtitle').innerText = titles[viewName] || '';
             
-            if (window.innerWidth <= 992) {
-                document.getElementById('nav-drawer').classList.remove('active');
-                document.getElementById('drawer-overlay').classList.remove('active');
-            }
+            document.getElementById('nav-drawer').classList.remove('active');
+            document.getElementById('drawer-overlay').classList.remove('active');
 
             if (viewName === 'analytics') renderAnalytics();
             if (viewName === 'history') renderHistoryTable();
             if (viewName === 'inventory') renderInventoryTable();
+
+            syncResponsiveInvoiceMode();
         }
 
         function togglePreview() {
+            if (window.innerWidth <= 992) {
+                mobilePreviewMode = !mobilePreviewMode;
+                syncResponsiveInvoiceMode();
+                document.getElementById('view-invoice').scrollTop = 0;
+                return;
+            }
+
             const panel = document.getElementById('previewPanel');
             const editor = document.getElementById('editorPanel');
             const btn = document.getElementById('previewToggleBtn');
@@ -1681,7 +2006,7 @@
                 </div>
                 <input type="number" class="form-control item-qty" id="item-qty-${id}" placeholder="تعداد" value="${itemData ? itemData.qty : 1}" min="1" oninput="renderInvoice()">
                 <input type="number" class="form-control item-price" id="item-price-${id}" placeholder="قیمت واحد" value="${itemData ? itemData.price : 0}" oninput="renderInvoice()">
-                <div style="font-size:11px; font-weight:700; text-align:center; color:var(--primary);" id="item-total-${id}">۰</div>
+                <div style="font-size:11.5px; font-weight:700; text-align:center; color:var(--primary); word-break:break-word;" id="item-total-${id}">۰</div>
                 <button class="btn-danger-icon" onclick="removeItemRow(${id})" title="حذف سطر">×</button>
             `;
             
@@ -1715,7 +2040,7 @@
             dropdown.innerHTML = filtered.map(p => `
                 <div class="product-dropdown-item" onclick="selectProduct(${id}, '${p.id}')">
                     <span>${p.name} (${p.code})</span>
-                    <span style="font-weight:700;">${formatMoney(p.sellPrice)} تومان</span>
+                    <span style="font-weight:700; white-space:nowrap;">${formatMoney(p.sellPrice)} تومان</span>
                 </div>
             `).join('');
             dropdown.style.display = 'block';
@@ -1944,6 +2269,11 @@
             itemsCount = 0;
             addItemRow();
             renderInvoice();
+            if (currentView !== 'invoice') switchView('invoice');
+            if (window.innerWidth <= 992 && mobilePreviewMode) {
+                mobilePreviewMode = false;
+                syncResponsiveInvoiceMode();
+            }
             showToast('فرم فاکتور برای صدور جدید آماده شد');
         }
 
@@ -2014,6 +2344,7 @@
                 addItemRow();
             }
 
+            mobilePreviewMode = false;
             switchView('invoice');
             showToast('فاکتور ' + inv.number + ' جهت ویرایش بارگذاری شد');
         }
