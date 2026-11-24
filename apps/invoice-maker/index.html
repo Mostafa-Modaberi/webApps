@@ -997,7 +997,6 @@
             .kpi-grid { grid-template-columns: 1fr; }
             .header-actions .btn { font-size: 11px; padding: 0 6px; }
         }
-
         @media print {
             @page { size: A4 portrait; margin: 0; }
             html, body { background: white !important; color: black !important; height: auto !important; overflow: visible !important; }
@@ -1046,7 +1045,7 @@
                     </div>
                     <div class="brand-text">
                         <h1>فاکتورساز و مدیریت مالی</h1>
-                        <p id="header-subtitle">صفحه اصلی: صدور فاکتور جدید</p>
+                        <p id="header-subtitle">صفحه اصلی: صدور فاکتور</p>
                     </div>
                 </div>
             </div>
@@ -1997,8 +1996,7 @@
             const input = document.getElementById(`item-name-${id}`);
             const dropdown = document.getElementById(`dropdown-${id}`);
             if(!input || !dropdown) return;
-            const val = input.value.trim().toLowerCase();
-            
+            const val = input.value.trim().toLowerCase();            
             const filtered = products.filter(p => p.name.toLowerCase().includes(val) || p.code.toLowerCase().includes(val));
             if (filtered.length === 0) {
                 dropdown.style.display = 'none';
